@@ -4,7 +4,9 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../../screen/tenant_screen.dart';
 import '../../screen/subject/subject_list_screen.dart';
 import '../../screen/login/login_screen.dart';
-import '../../screen/profesor/profesor_list_screen.dart';
+import '../../screen/director/profesor_list_screen.dart';
+import '../../screen/tenant/director_tenant_screen.dart';
+import '../../screen/home_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -27,6 +29,7 @@ class _MainLayoutState extends State<MainLayout> {
     // ================= SUPER ADMIN =================
     if (role == 'super-admin') {
       screens = [
+         const HomeScreen(),
         const TenantScreen(),
         const SizedBox(), // placeholder
       ];
@@ -34,11 +37,11 @@ class _MainLayoutState extends State<MainLayout> {
       items = const [
         NavigationDestination(
           icon: Icon(Icons.school),
-          label: 'Colegios',
+          label: 'Inicio',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings),
-          label: 'Opciones',
+          label: 'Colegios',
         ),
       ];
     }
@@ -48,6 +51,10 @@ class _MainLayoutState extends State<MainLayout> {
       screens = [
         const SubjectListScreen(),
         const ProfesorListScreen(),
+       /*  const DirectorTenantScreen(),  */
+         DirectorTenantScreen(
+          onSuccess: () => setState(() => selectedIndex = 0),
+    ),
          // placeholder
       ];
 
@@ -59,7 +66,11 @@ class _MainLayoutState extends State<MainLayout> {
         NavigationDestination(
           icon: Icon(Icons.person),
           label: 'Profesores',
-  ),
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.school),
+          label: 'Mi Colegio',
+        ),
       ];
     }
 

@@ -56,7 +56,7 @@ class _SubjectListScreenState extends State<SubjectListScreen> {
                           horizontal: 12, vertical: 6),
                       child: ListTile(
                         title: Text(s.name ?? ''),
-                        subtitle: Text("ID: ${s.id}"),
+                       /*  subtitle: Text("ID: ${s.id}"), */
                         leading: const Icon(Icons.menu_book),
                       ),
                     );
