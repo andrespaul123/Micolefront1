@@ -72,4 +72,16 @@ class ProfesorRepository {
     return false;
   }
 }
+
+Future<bool> deleteProfesor(int id) async {
+    try {
+      await _dio.delete('/profesores/$id');
+      return true;
+    } catch (e) {
+      if (e is DioException) {
+        print("ERROR DELETE PROFESOR: ${e.response?.data}");
+      }
+      return false;
+    }
+  }
 }

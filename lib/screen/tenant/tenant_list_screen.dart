@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodels/tenant_viewmodel.dart';
+import '../tenant_screen.dart'; // si tienes pantalla de crear
+
+
+class TenantListScreen extends StatefulWidget {
+  const TenantListScreen({super.key});
+
+  @override
+  State<TenantListScreen> createState() => _TenantListScreenState();
+}
+
+class _TenantListScreenState extends State<TenantListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() =>
+        Provider.of<TenantViewModel>(context, listen: false).loadTenants());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = Provider.of<TenantViewModel>(context);
+
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TenantScreen()),
+          );
+          vm.loadTenants();
+        },
+        child: const Icon(Icons.add),
+      ),
+      body: vm.loading
+          ? const Center(child: CircularProgressIndicator())
+          : vm.tenants.isEmpty
+              ? const Center(child: Text("No hay colegios"))
+              : ListView.builder(
+                  itemCount: vm.tenants.length,
+                  itemBuilder: (_, i) {
+                    final t = vm.tenants[i];
+
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+
+                        // 🔥 LOGO
+                        leading: CircleAvatar(
+                          radius: 22,
+                          backgroundColor: Colors.grey[200],
+                          backgroundImage: t.logoUrl != null
+                              ? NetworkImage(t.logoUrl!)
+                              : null,
+                          child: t.logoUrl == null
+                              ? const Icon(Icons.school)
+                              : null,
+                        ),
+
+                        // 🔤 NOMBRE
+                        title: Text(
+                          t.name ?? '',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+
+                        // 🔗 SLUG
+                        subtitle: Text(
+                          t.slug ?? '',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+
+                        // 🗑 ELIMINAR
+                        trailing: IconButton(
+                          icon:
+                              const Icon(Icons.delete, color: Colors.red),
+                          tooltip: 'Eliminar colegio',
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text('¿Eliminar colegio?'),
+                                content: Text(
+                                    'Se eliminará "${t.name}" permanentemente.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red),
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text('Eliminar',
+                                        style: TextStyle(color: Colors.white)),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              final success =
+                                  await vm.deleteTenant(t.id!);
+
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(success
+                                        ? 'Colegio eliminado'
+                                        : 'Error al eliminar'),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}

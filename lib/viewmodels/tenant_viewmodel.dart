@@ -10,8 +10,19 @@ class TenantViewModel extends ChangeNotifier {
   bool loading = false;
   TenantResponse? tenant;
    Tenant? currentTenant;
+   List<Tenant> tenants = [];
 
   TenantViewModel({required this.repository});
+
+  Future<void> loadTenants() async {
+    loading = true;
+    notifyListeners();
+
+    tenants = await repository.getTenants();
+
+    loading = false;
+    notifyListeners();
+  }
 
   Future<bool> createTenant({
     required String name,
@@ -67,5 +78,18 @@ Future<bool> uploadLogo(XFile file) async {
     loading = false;
     notifyListeners();
     return updated != null;
+  }
+
+   Future<bool> deleteTenant(int id) async {
+    loading = true;
+    notifyListeners();
+
+    final success = await repository.deleteTenant(id);
+
+    if (success) await loadTenants();
+
+    loading = false;
+    notifyListeners();
+    return success;
   }
 }

@@ -67,4 +67,18 @@ class ProfesorViewModel extends ChangeNotifier {
 
   return success;
 }
+
+Future<bool> deleteProfesor(int id) async {
+    loading = true;
+    notifyListeners();
+
+    final success = await repository.deleteProfesor(id);
+
+    if (success) await loadProfesores();
+
+    loading = false;
+    notifyListeners();
+    return success;
+  }
+  
 }

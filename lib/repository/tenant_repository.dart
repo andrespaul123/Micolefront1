@@ -7,6 +7,20 @@ class TenantRepository {
 
   TenantRepository(this._dio);
 
+  Future<List<Tenant>> getTenants() async {
+    try {
+      final response = await _dio.get('/tenants');
+      return (response.data as List)
+          .map((e) => Tenant.fromJson(e))
+          .toList();
+    } catch (e) {
+      if (e is DioException) {
+        print("ERROR GET TENANTS: ${e.response?.data}");
+      }
+      return [];
+    }
+  }
+
   Future<TenantResponse?> createTenant({
     required String name,
     required String slug,
@@ -66,4 +80,15 @@ class TenantRepository {
       return null;
     }
   }
+
+  Future<bool> deleteTenant(int id) async {
+    try {
+      await _dio.delete('/tenants/$id');
+      return true;
+    } catch (e) {
+      if (e is DioException) print("ERROR DELETE TENANT: ${e.response?.data}");
+      return false;
+    }
+  }
+
 }

@@ -3,12 +3,14 @@ class Tenant {
   final String? name;
   final String? slug;
   final String? logo;
+  final String? logoUrl;
 
   Tenant({
     this.id,
     this.name,
     this.slug,
     this.logo,
+    this.logoUrl,
   });
 
   factory Tenant.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class Tenant {
       name: json['name'],
       slug: json['slug'],
       logo: json['logo'],
+      logoUrl: json['logo_url'],
     );
   }
 }

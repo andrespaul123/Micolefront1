@@ -8,11 +8,15 @@ import 'core/dio/dio_client.dart';
 import 'repository/auth_repository.dart';
 import 'repository/tenant_repository.dart';
 import 'repository/subject_repository.dart';
+import 'repository/curso_repository.dart';
+import 'repository/paralelo_repository.dart';
 
 // VIEWMODELS
 import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/tenant_viewmodel.dart';
 import 'viewmodels/subject_repository.dart'; 
+import 'viewmodels/curso_viewmodel.dart'; 
+import 'viewmodels/paralelo_viewmodel.dart';
 
 // SCREENS
 import 'screen/login/login_screen.dart';
@@ -29,7 +33,7 @@ void main() {
         // 🔐 AUTH
         ChangeNotifierProvider(
           create: (_) => AuthViewModel(
-            repository: AuthRepository(dio: dio),
+            repository: AuthRepository(dio),
           ),
         ),
 
@@ -58,6 +62,31 @@ void main() {
             );
           },
         ),
+        
+        //curso
+        ChangeNotifierProxyProvider<AuthViewModel, CursoViewModel>(
+          create: (_) => CursoViewModel(
+            repository: CursoRepository(dio),
+          ),  
+          update: (_, auth, previous) {
+            // ❌ YA NO USAMOS HEADERS MANUALES
+            return CursoViewModel(
+              repository: CursoRepository(dio),
+            );
+          },
+        ),
+        
+        ChangeNotifierProxyProvider<AuthViewModel, ParaleloViewModel>(
+        create: (_) => ParaleloViewModel(
+        repository: ParaleloRepository(dio),
+    ),
+  update: (_, auth, previous) {
+    return ParaleloViewModel(
+      repository: ParaleloRepository(dio),
+    );
+  },
+),
+
         ChangeNotifierProxyProvider<AuthViewModel, ProfesorViewModel>(
   create: (_) => ProfesorViewModel(
     repository: ProfesorRepository(dio),

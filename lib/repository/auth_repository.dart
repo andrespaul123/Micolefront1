@@ -2,22 +2,10 @@ import 'package:dio/dio.dart';
 import '../models/users.dart';
 
 class AuthRepository {
-  final Dio _dio;
+     final Dio _dio;
 
-  AuthRepository({Dio? dio})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl:  "http://192.168.137.232:8000/api",
-                connectTimeout: const Duration(seconds: 5),
-                receiveTimeout: const Duration(seconds: 5),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                },
-              ),
-            );
-
+      AuthRepository(this._dio);
+ 
   // LOGIN
   Future<Users?> login(String email, String password) async {
     try {
