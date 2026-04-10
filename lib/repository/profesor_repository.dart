@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../models/profesor.dart';
+import '../models/subject.dart';
 
 class ProfesorRepository {
   final Dio _dio;
@@ -21,6 +22,22 @@ class ProfesorRepository {
       return [];
     }
   }
+  //materias de un profesor
+  Future<List<Subject>> getSubjectsByProfesor(int profesorId) async {
+  try {
+    final response = await _dio.get('/profesores/$profesorId/subjects');
+
+    final List data = response.data['data']; 
+    return data
+        .map((e) => Subject.fromJson(e))
+        .toList();
+  } catch (e) {
+    if (e is DioException) {
+      print("ERROR SUBJECTS PROFESOR: ${e.response?.data}");
+    }
+    return [];
+  }
+}
 
   // 🔥 CREAR
   Future<bool> createProfesor({

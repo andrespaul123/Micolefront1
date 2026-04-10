@@ -24,6 +24,16 @@ class TenantViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadMyTenant() async {
+  loading = true;
+  notifyListeners();
+
+  currentTenant = await repository.getMyTenant();
+
+  loading = false;
+  notifyListeners();
+  }
+
   Future<bool> createTenant({
     required String name,
     required String slug,

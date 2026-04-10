@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/profesor.dart';
 import '../repository/profesor_repository.dart';
+import '../models/subject.dart';
 
 class ProfesorViewModel extends ChangeNotifier {
   final ProfesorRepository repository;
@@ -20,6 +21,18 @@ class ProfesorViewModel extends ChangeNotifier {
     loading = false;
     notifyListeners();
   }
+  List<Subject> subjectsProfesor = [];
+
+  Future<void> loadSubjectsProfesor(int profesorId) async {
+  loading = true;
+  notifyListeners();
+
+  subjectsProfesor = await repository.getSubjectsByProfesor(profesorId);
+
+  loading = false;
+  notifyListeners();
+}
+
 
   // CREAR
   Future<bool> createProfesor({

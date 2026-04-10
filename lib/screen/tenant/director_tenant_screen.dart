@@ -121,11 +121,7 @@ class _DirectorTenantScreenState extends State<DirectorTenantScreen> {
                                       ),
                                     );
                                     if (ok) {
-                                      setState(() {
-                                        _selectedFile = null;
-                                        _previewBytes = null;
-                                      });
-                                      widget.onSuccess?.call(); // 🔥 vuelve a Materias
+                                        Navigator.pop(context, true); // 🔥 REGRESA
                                     }
                                   },
                           ),
@@ -189,7 +185,9 @@ class _DirectorTenantScreenState extends State<DirectorTenantScreen> {
                                         : '❌ Error al actualizar'),
                                   ),
                                 );
-                                if (ok) widget.onSuccess?.call(); // 🔥
+                                if (ok) {
+                                     Navigator.pop(context, true); // 🔥 REGRESA Y AVISA
+                                  }
                               },
                             ),
                           ),

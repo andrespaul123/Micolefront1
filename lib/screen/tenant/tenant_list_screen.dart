@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/tenant_viewmodel.dart';
-import '../tenant_screen.dart'; // si tienes pantalla de crear
+import '../tenant_screen.dart'; 
 
 
 class TenantListScreen extends StatefulWidget {

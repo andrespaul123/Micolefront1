@@ -21,6 +21,32 @@ class TenantRepository {
     }
   }
 
+  /* Future<Tenant?> getMyTenant() async {
+  try {
+    final response = await _dio.get('/my-tenant');
+
+    return Tenant.fromJson(response.data['data']);
+  } catch (e) {
+    if (e is DioException) {
+      print("ERROR MY TENANT: ${e.response?.data}");
+    }
+    return null;
+  }
+} */
+Future<Tenant?> getMyTenant() async {
+  try {
+    final response = await _dio.get('/my-tenant');
+
+    final data = response.data['data'];
+
+    data['logo_url'] = response.data['logo_url'];
+
+    return Tenant.fromJson(data);
+  } catch (e) {
+    return null;
+  }
+}
+
   Future<TenantResponse?> createTenant({
     required String name,
     required String slug,

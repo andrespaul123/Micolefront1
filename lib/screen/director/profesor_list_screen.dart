@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/profesor_viewmodel.dart';
 import 'profesor_create_screen.dart';
 import 'asignar_materia_screen.dart';
+import 'asignar_horario_screen.dart';
 
 class ProfesorListScreen extends StatefulWidget {
   const ProfesorListScreen({super.key});
@@ -110,7 +111,17 @@ class _ProfesorListScreenState extends State<ProfesorListScreen> {
                                 );
                               },
                             ),
-
+                              // dentro del Row del trailing, agregar:
+IconButton(
+  icon: const Icon(Icons.schedule, color: Colors.green),
+  tooltip: 'Asignar horario',
+  onPressed: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => AsignarHorarioScreen(profesor: p),
+    ),
+  ),
+),
                             // 🗑️ ELIMINAR
                             IconButton(
                               icon: const Icon(

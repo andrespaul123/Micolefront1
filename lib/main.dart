@@ -10,6 +10,7 @@ import 'repository/tenant_repository.dart';
 import 'repository/subject_repository.dart';
 import 'repository/curso_repository.dart';
 import 'repository/paralelo_repository.dart';
+import 'repository/asignacion_repository.dart';
 
 // VIEWMODELS
 import 'viewmodels/auth_viewmodel.dart';
@@ -17,6 +18,7 @@ import 'viewmodels/tenant_viewmodel.dart';
 import 'viewmodels/subject_repository.dart'; 
 import 'viewmodels/curso_viewmodel.dart'; 
 import 'viewmodels/paralelo_viewmodel.dart';
+import 'viewmodels/asignacion_viewmodel.dart';
 
 // SCREENS
 import 'screen/login/login_screen.dart';
@@ -86,6 +88,12 @@ void main() {
     );
   },
 ),
+ChangeNotifierProvider(
+  create: (_) => AsignacionViewModel(
+    repository: AsignacionRepository(dio),
+  ),
+),
+// Dentro de MultiProvider, añade esto:
 
         ChangeNotifierProxyProvider<AuthViewModel, ProfesorViewModel>(
   create: (_) => ProfesorViewModel(
