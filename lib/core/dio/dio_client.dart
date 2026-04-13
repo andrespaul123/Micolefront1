@@ -1,11 +1,18 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../storage/secure_storage.dart';
+import '../app_keys.dart';
+import '../../screen/login/login_screen.dart';
 
 class DioClient {
   static Dio create() {
     final dio = Dio(
       BaseOptions(
         baseUrl: 'http://192.168.100.206:8000/api',
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 10),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -16,23 +23,21 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final prefs = await SharedPreferences.getInstance();
-          final token = prefs.getString('token');
-
+          final token = await SecureStorage.getToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
-
-          print("➡️ ${options.method} ${options.path}");
+          if (kDebugMode) debugPrint('➡️ ${options.method} ${options.path}');
           return handler.next(options);
         },
-
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.clear();
+            await SecureStorage.clear();
+            navigatorKey.currentState?.pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (_) => false,
+            );
           }
-
           return handler.next(error);
         },
       ),

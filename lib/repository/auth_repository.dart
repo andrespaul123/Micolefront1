@@ -37,7 +37,7 @@ class AuthRepository {
         'name': name,
         'email': email,
         'password': password,
-        'role': 'super-admin', // 🔥 AGREGA ESTO */
+        'role': 'super-admin', 
       },
     );
 

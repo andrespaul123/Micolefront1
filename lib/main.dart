@@ -4,6 +4,9 @@ import 'repository/profesor_repository.dart';
 import 'viewmodels/profesor_viewmodel.dart';
 // 🔥 INTERCEPTOR
 import 'core/dio/dio_client.dart';
+import 'core/app_keys.dart';
+import 'core/layout/main_layout.dart';
+
 // REPOSITORIES
 import 'repository/auth_repository.dart';
 import 'repository/tenant_repository.dart';
@@ -23,33 +26,27 @@ import 'viewmodels/asignacion_viewmodel.dart';
 // SCREENS
 import 'screen/login/login_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 🔥 USAR DIO CON INTERCEPTOR
   final dio = DioClient.create();
+  final authViewModel = AuthViewModel(repository: AuthRepository(dio));
+  await authViewModel.loadSession();
 
   runApp(
     MultiProvider(
       providers: [
         // 🔐 AUTH
-        ChangeNotifierProvider(
-          create: (_) => AuthViewModel(
-            repository: AuthRepository(dio),
-          ),
-        ),
+        ChangeNotifierProvider.value(value: authViewModel),
 
         // 🏫 TENANT
         ChangeNotifierProxyProvider<AuthViewModel, TenantViewModel>(
           create: (_) => TenantViewModel(
             repository: TenantRepository(dio),
           ),
-          update: (_, auth, previous) {
-            // ❌ YA NO USAMOS HEADERS MANUALES
-            return TenantViewModel(
-              repository: TenantRepository(dio),
-            );
-          },
+          update: (_, auth, previous) =>
+              previous ?? TenantViewModel(repository: TenantRepository(dio)),
         ),
 
         // 📚 SUBJECT
@@ -57,72 +54,62 @@ void main() {
           create: (_) => SubjectViewModel(
             repository: SubjectRepository(dio),
           ),
-          update: (_, auth, previous) {
-            // ❌ YA NO USAMOS HEADERS MANUALES
-            return SubjectViewModel(
-              repository: SubjectRepository(dio),
-            );
-          },
+          update: (_, auth, previous) =>
+              previous ?? SubjectViewModel(repository: SubjectRepository(dio)),
         ),
-        
-        //curso
+
+        // CURSO
         ChangeNotifierProxyProvider<AuthViewModel, CursoViewModel>(
           create: (_) => CursoViewModel(
             repository: CursoRepository(dio),
-          ),  
-          update: (_, auth, previous) {
-            // ❌ YA NO USAMOS HEADERS MANUALES
-            return CursoViewModel(
-              repository: CursoRepository(dio),
-            );
-          },
+          ),
+          update: (_, auth, previous) =>
+              previous ?? CursoViewModel(repository: CursoRepository(dio)),
         ),
-        
-        ChangeNotifierProxyProvider<AuthViewModel, ParaleloViewModel>(
-        create: (_) => ParaleloViewModel(
-        repository: ParaleloRepository(dio),
-    ),
-  update: (_, auth, previous) {
-    return ParaleloViewModel(
-      repository: ParaleloRepository(dio),
-    );
-  },
-),
-ChangeNotifierProvider(
-  create: (_) => AsignacionViewModel(
-    repository: AsignacionRepository(dio),
-  ),
-),
-// Dentro de MultiProvider, añade esto:
 
+        // PARALELO
+        ChangeNotifierProxyProvider<AuthViewModel, ParaleloViewModel>(
+          create: (_) => ParaleloViewModel(
+            repository: ParaleloRepository(dio),
+          ),
+          update: (_, auth, previous) =>
+              previous ?? ParaleloViewModel(repository: ParaleloRepository(dio)),
+        ),
+
+        // PROFESOR
         ChangeNotifierProxyProvider<AuthViewModel, ProfesorViewModel>(
-  create: (_) => ProfesorViewModel(
-    repository: ProfesorRepository(dio),
-  ),
-  update: (_, auth, previous) {
-    return ProfesorViewModel(
-      repository: ProfesorRepository(dio),
-    );
-  },
-),
+          create: (_) => ProfesorViewModel(
+            repository: ProfesorRepository(dio),
+          ),
+          update: (_, auth, previous) =>
+              previous ?? ProfesorViewModel(repository: ProfesorRepository(dio)),
+        ),
+
+        // ASIGNACION
+        ChangeNotifierProvider(
+          create: (_) => AsignacionViewModel(
+            repository: AsignacionRepository(dio),
+          ),
+        ),
       ],
-      child: const MyApp(),
+      child: MyApp(isLoggedIn: authViewModel.isLoggedIn),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MI COLE APP',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       theme: ThemeData(primarySwatch: Colors.blue),
-
-      // 🔥 SE MANTIENE COMO ANTES
-      home: const LoginScreen(),
+      home: isLoggedIn ? const MainLayout() : const LoginScreen(),
     );
   }
 }

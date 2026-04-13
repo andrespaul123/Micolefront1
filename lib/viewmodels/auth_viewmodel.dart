@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/users.dart';
 import '../repository/auth_repository.dart';
+import '../core/storage/secure_storage.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthRepository repository;
@@ -9,10 +11,9 @@ class AuthViewModel extends ChangeNotifier {
   Users? user;
   String? token;
   bool loading = false;
+  String? loginError;
 
   AuthViewModel({required this.repository});
-
-  // ================= GETTERS =================
 
   String? get role {
     if (user == null || user!.roles.isEmpty) return null;
@@ -21,118 +22,114 @@ class AuthViewModel extends ChangeNotifier {
 
   bool get isLoggedIn => token != null;
 
-  // ================= LOGIN =================
-
   Future<bool> login(String email, String password) async {
     loading = true;
+    loginError = null;
     notifyListeners();
 
-    final response = await repository.login(email, password);
+    try {
+      final response = await repository.login(email, password);
 
-    if (response != null) {
-      user = response;
-      token = response.token;
-
-      // 🔥 GUARDAR SESIÓN
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response.token);
-      await prefs.setString('role', response.roles.first);
-      await prefs.setString('name', response.name);
-      await prefs.setString('email', response.email);
-
-      print("✅ LOGIN OK");
-    } else {
-      print("❌ LOGIN FALLIDO");
-    }
-
-    loading = false;
-    notifyListeners();
-
-    return user != null;
-  }
-
-  // ================= REGISTER =================
-
-  Future<bool> register(
-      String name, String email, String password) async {
-    loading = true;
-    notifyListeners();
-
-    final response = await repository.register(
-      name: name,
-      email: email,
-      password: password,
-    );
-
-    if (response != null) {
-      user = response;
-      token = response.token;
-
-      // 🔥 GUARDAR SESIÓN (opcional)
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response.token);
-      await prefs.setString('role', response.roles.first);
-      await prefs.setString('name', response.name);
-      await prefs.setString('email', response.email);
-
-      print("✅ REGISTER OK");
-    } else {
-      print("❌ REGISTER FALLIDO");
-    }
-
-    loading = false;
-    notifyListeners();
-
-    return user != null;
-  }
-
-  // ================= LOAD SESSION =================
-
-  Future<void> loadSession() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final savedToken = prefs.getString('token');
-    final savedRole = prefs.getString('role');
-    final savedName = prefs.getString('name');
-    final savedEmail = prefs.getString('email');
-
-    if (savedToken != null) {
-      token = savedToken;
-
-      user = Users(
-        id: null,
-        name: savedName ?? '',
-        email: savedEmail ?? '',
-        token: savedToken,
-        roles: savedRole != null ? [savedRole] : [],
-      );
-
-      print("🔁 SESIÓN RESTAURADA");
-      print("Token: $savedToken");
-      print("Role: $savedRole");
-
+      if (response != null) {
+        user = response;
+        token = response.token;
+        
+        await SecureStorage.saveSession(
+          token: response.token,
+          role: response.roles.first,
+          name: response.name,
+          email: response.email,
+        );
+        
+        if (kDebugMode) debugPrint('✅ LOGIN OK');
+        return true;
+      } else {
+        loginError = 'Credenciales inválidas';
+        return false;
+      }
+    } on DioException catch (e) {
+      loginError = e.response?.data?['message'] ?? 'Error de conexión';
+      if (kDebugMode) debugPrint('❌ LOGIN ERROR: $e');
+      return false;
+    } catch (e) {
+      loginError = 'Error inesperado';
+      if (kDebugMode) debugPrint('❌ LOGIN ERROR: $e');
+      return false;
+    } finally {
+      loading = false;
       notifyListeners();
     }
   }
 
-  // ================= LOGOUT =================
-
-  Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.clear(); // 🔥 borra sesión local
+  Future<bool> register(String name, String email, String password) async {
+    loading = true;
+    loginError = null;
+    notifyListeners();
 
     try {
-      await repository.logout(); // 🔥 backend
+      final response = await repository.register(
+        name: name,
+        email: email,
+        password: password,
+      );
+
+      if (response != null) {
+        user = response;
+        token = response.token;
+
+        await SecureStorage.saveSession(
+          token: response.token,
+          role: response.roles.first,
+          name: response.name,
+          email: response.email,
+        );
+
+        if (kDebugMode) debugPrint('✅ REGISTER OK');
+        return true;
+      } else {
+        loginError = 'Error al registrarse';
+        return false;
+      }
+    } on DioException catch (e) {
+      loginError = e.response?.data?['message'] ?? 'Error de conexión';
+      return false;
     } catch (e) {
-      print("Error logout: $e");
+      loginError = 'Error inesperado';
+      return false;
+    } finally {
+      loading = false;
+      notifyListeners();
     }
+  }
+
+  Future<void> loadSession() async {
+    final session = await SecureStorage.getSession();
+
+    if (session['token'] != null) {
+      token = session['token'];
+      user = Users(
+        id: null,
+        name: session['name'] ?? '',
+        email: session['email'] ?? '',
+        token: session['token']!,
+        roles: session['role'] != null ? [session['role']!] : [],
+      );
+      if (kDebugMode) debugPrint('🔁 SESIÓN RESTAURADA');
+      notifyListeners();
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      await repository.logout();
+    } catch (_) {}
+
+    await SecureStorage.clear();
 
     user = null;
     token = null;
 
-    print("🔓 SESIÓN CERRADA");
-
+    if (kDebugMode) debugPrint('🔓 SESIÓN CERRADA');
     notifyListeners();
   }
 }
