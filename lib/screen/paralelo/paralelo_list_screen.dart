@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/paralelo_viewmodel.dart';
-import 'paralelo_create_screen.dart';
+import '../../viewmodels/curso_viewmodel.dart';
 
 class ParaleloListScreen extends StatefulWidget {
-  const ParaleloListScreen({super.key});
+  final int cursoId;
+
+  const ParaleloListScreen({super.key, required this.cursoId});
 
   @override
   State<ParaleloListScreen> createState() => _ParaleloListScreenState();
@@ -14,8 +17,14 @@ class _ParaleloListScreenState extends State<ParaleloListScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        Provider.of<ParaleloViewModel>(context, listen: false).loadParalelos());
+
+    Future.microtask(() {
+      final cursoVM = Provider.of<CursoViewModel>(context, listen: false);
+      final periodoId = cursoVM.periodoActivo!.id!;
+
+      Provider.of<ParaleloViewModel>(context, listen: false)
+          .loadParalelosByCurso(periodoId, widget.cursoId);
+    });
   }
 
   @override
@@ -23,104 +32,39 @@ class _ParaleloListScreenState extends State<ParaleloListScreen> {
     final vm = Provider.of<ParaleloViewModel>(context);
 
     return Scaffold(
+      appBar:  AppBar(title: Text('Paralelos')),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ParaleloCreateScreen()),
-          );
-          vm.loadParalelos();
+        onPressed: () {
+          context.go('/cursos/${widget.cursoId}/paralelos/create');
         },
         child: const Icon(Icons.add),
       ),
       body: vm.loading
           ? const Center(child: CircularProgressIndicator())
           : vm.paralelos.isEmpty
-              ? const Center(child: Text("No hay paralelos"))
+              ? const Center(child: Text('No hay paralelos'))
               : ListView.builder(
                   itemCount: vm.paralelos.length,
                   itemBuilder: (_, i) {
                     final p = vm.paralelos[i];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blue.shade100,
-                          child: Text(
-                            p.nombre ?? '?',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue),
-                          ),
-                        ),
-                        title: Text(
-                          '${p.curso?.nombre ?? 'Curso'} — Paralelo ${p.nombre}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (p.turno != null)
-                              Text('Turno: ${p.turno}'),
-                            if (p.capacidad != null)
-                              Text(
-                                'Capacidad: ${p.capacidad} alumnos',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.grey),
-                              ),
-                          ],
-                        ),
-                     trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          tooltip: 'Eliminar paralelo',
-                          onPressed: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: const Text('¿Eliminar paralelo?'),
-                                content: Text(
-                                    'Se eliminará "${p.nombre}" permanentemente.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    child: const Text('Cancelar'),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red),
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: const Text('Eliminar',
-                                        style:
-                                            TextStyle(color: Colors.white)),
-                                  ),
-                                ],
-                              ),
-                            );
+                    return ListTile(
+                      title: Text('Paralelo ${p.nombre}'),
+                      subtitle: Text(p.turno ?? ''),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () async {
+                          await vm.deleteParalelo(p.id!);
 
-                            if (confirm == true) {
-                              final success =
-                                  await vm.deleteParalelo(p.id!);
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(success
-                                        ? 'Paralelo eliminado'
-                                        : 'Error al eliminar'),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                        ),
+                          final cursoVM = Provider.of<CursoViewModel>(
+                            context,
+                            listen: false,
+                          );
+
+                          vm.loadParalelosByCurso(
+                            cursoVM.periodoActivo!.id!,
+                            widget.cursoId,
+                          );
+                        },
                       ),
                     );
                   },

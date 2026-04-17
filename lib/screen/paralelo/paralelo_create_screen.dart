@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/paralelo_viewmodel.dart';
 import '../../viewmodels/curso_viewmodel.dart';
-import '../../models/curso.dart';
 import '../../core/widgest/auth_card.dart';
 import '../../core/widgest/auth_input.dart';
 
 class ParaleloCreateScreen extends StatefulWidget {
-  const ParaleloCreateScreen({super.key});
+  final int cursoId;
+
+  const ParaleloCreateScreen({
+    super.key,
+    required this.cursoId,
+  });
 
   @override
   State<ParaleloCreateScreen> createState() => _ParaleloCreateScreenState();
@@ -15,28 +20,21 @@ class ParaleloCreateScreen extends StatefulWidget {
 
 class _ParaleloCreateScreenState extends State<ParaleloCreateScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final nombreController = TextEditingController();
   final turnoController = TextEditingController();
   final capacidadController = TextEditingController();
 
-  Curso? selectedCurso;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() =>
-        Provider.of<CursoViewModel>(context, listen: false).loadCursos());
-  }
-
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<ParaleloViewModel>(context);
-    final cursoVM = Provider.of<CursoViewModel>(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      appBar: AppBar(title: const Text('Crear Paralelo')),
+
+      appBar: AppBar(
+        title: const Text('Nuevo Paralelo'),
+      ),
+
       body: vm.loading
           ? const Center(child: CircularProgressIndicator())
           : AuthCard(
@@ -47,57 +45,39 @@ class _ParaleloCreateScreenState extends State<ParaleloCreateScreen> {
                   children: [
                     const Icon(Icons.account_tree, size: 60, color: Colors.blue),
                     const SizedBox(height: 10),
+
                     const Text(
                       'Crear Paralelo',
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 20),
 
-                    // 🔥 Dropdown de cursos
-                    DropdownButtonFormField<Curso>(
-                      value: selectedCurso,
-                      decoration: InputDecoration(
-                        labelText: 'Curso',
-                        prefixIcon: const Icon(Icons.class_),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      hint: const Text('Seleccionar curso'),
-                      items: cursoVM.cursos.map((c) {
-                        return DropdownMenuItem(
-                          value: c,
-                          child: Text('${c.nombre} — ${c.nivel}'),
-                        );
-                      }).toList(),
-                      onChanged: (value) => setState(() => selectedCurso = value),
-                      validator: (_) =>
-                          selectedCurso == null ? 'Selecciona un curso' : null,
-                    ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     AuthInput(
                       controller: nombreController,
-                      label: 'Nombre (ej: A, B, C)',
+                      label: 'Nombre (A, B, C...)',
                       icon: Icons.label,
                       validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
                     ),
+
                     const SizedBox(height: 16),
 
                     AuthInput(
                       controller: turnoController,
-                      label: 'Turno (ej: Mañana, Tarde)',
+                      label: 'Turno',
                       icon: Icons.schedule,
                       validator: (_) => null,
                     ),
+
                     const SizedBox(height: 16),
 
                     AuthInput(
                       controller: capacidadController,
-                      label: 'Capacidad (nº alumnos)',
+                      label: 'Capacidad',
                       icon: Icons.people,
                       validator: (_) => null,
                     ),
+
                     const SizedBox(height: 20),
 
                     SizedBox(
@@ -107,7 +87,7 @@ class _ParaleloCreateScreenState extends State<ParaleloCreateScreen> {
                           if (!_formKey.currentState!.validate()) return;
 
                           final success = await vm.createParalelo(
-                            cursoId: selectedCurso!.id!,
+                            cursoId: widget.cursoId,
                             nombre: nombreController.text.trim(),
                             turno: turnoController.text.trim().isEmpty
                                 ? null
@@ -117,15 +97,21 @@ class _ParaleloCreateScreenState extends State<ParaleloCreateScreen> {
                                 : int.tryParse(capacidadController.text.trim()),
                           );
 
-                          if (success && mounted) {
+                          if (!mounted) return;
+
+                          if (success) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content: Text('Paralelo creado correctamente')),
+                                content: Text('Paralelo creado correctamente'),
+                              ),
                             );
-                            Navigator.pop(context);
+
+                            context.go('/cursos/${widget.cursoId}/paralelos');
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Error al crear')),
+                              const SnackBar(
+                                content: Text('Error al crear'),
+                              ),
                             );
                           }
                         },

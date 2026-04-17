@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../storage/secure_storage.dart';
-import '../app_keys.dart';
-import '../../screen/login/login_screen.dart';
+import '../router/app_router.dart';   // 🔥 redirectToLogin()
+
+// 🔥 Ya NO se necesita navigatorKey ni LoginScreen aquí
 
 class DioClient {
   static Dio create() {
@@ -33,10 +33,7 @@ class DioClient {
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
             await SecureStorage.clear();
-            navigatorKey.currentState?.pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (_) => false,
-            );
+            redirectToLogin(); // 🔥 usa GoRouter, sin contexto
           }
           return handler.next(error);
         },

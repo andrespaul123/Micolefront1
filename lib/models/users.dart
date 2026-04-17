@@ -14,7 +14,6 @@ class Users {
   });
 
   factory Users.fromJson(Map<String, dynamic> json) {
-    // 🔥 soporta login y register
     List<String> rolesList = [];
 
     if (json['roles'] != null) {

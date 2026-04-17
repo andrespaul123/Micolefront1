@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../models/profesor.dart';
+
 import '../../models/subject.dart';
 import '../../models/curso.dart';
 import '../../models/paralelo.dart';
+
 import '../../viewmodels/asignacion_viewmodel.dart';
-import '../../viewmodels/profesor_viewmodel.dart'; // ✅ IMPORTANTE
+import '../../viewmodels/profesor_viewmodel.dart';
 import '../../viewmodels/curso_viewmodel.dart';
 import '../../viewmodels/paralelo_viewmodel.dart';
 
 class AsignarHorarioScreen extends StatefulWidget {
-  final Profesor profesor;
-  const AsignarHorarioScreen({super.key, required this.profesor});
+  final int profesorId;
+
+  const AsignarHorarioScreen({
+    super.key,
+    required this.profesorId,
+  });
 
   @override
   State<AsignarHorarioScreen> createState() => _AsignarHorarioScreenState();
@@ -32,10 +38,10 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
   @override
   void initState() {
     super.initState();
+
     Future.microtask(() {
-      // 🔥 SOLO MATERIAS DEL PROFESOR
       Provider.of<ProfesorViewModel>(context, listen: false)
-          .loadSubjectsProfesor(widget.profesor.id!);
+          .loadSubjectsProfesor(widget.profesorId);
 
       Provider.of<CursoViewModel>(context, listen: false).loadCursos();
       Provider.of<ParaleloViewModel>(context, listen: false).loadParalelos();
@@ -53,6 +59,7 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
+
     if (picked != null) {
       setState(() {
         if (isInicio) {
@@ -79,9 +86,7 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
 
     if (fin <= inicio) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('La hora fin debe ser mayor a la hora inicio'),
-        ),
+        const SnackBar(content: Text('La hora fin debe ser mayor')),
       );
       return;
     }
@@ -89,7 +94,7 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
     final vm = Provider.of<AsignacionViewModel>(context, listen: false);
 
     final error = await vm.crearAsignacion(
-      profesorId: widget.profesor.id!,
+      profesorId: widget.profesorId,
       subjectId: _subject!.id!,
       cursoId: _curso!.id!,
       paraleloId: _paralelo!.id!,
@@ -104,7 +109,8 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Horario asignado correctamente')),
       );
-      Navigator.pop(context);
+
+      context.go('/profesores');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error)),
@@ -115,7 +121,7 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<AsignacionViewModel>(context);
-    final profVM = Provider.of<ProfesorViewModel>(context); // ✅ CLAVE
+    final profVM = Provider.of<ProfesorViewModel>(context);
     final cursoVM = Provider.of<CursoViewModel>(context);
     final paraleVM = Provider.of<ParaleloViewModel>(context);
 
@@ -125,8 +131,9 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Asignar horario · ${widget.profesor.name ?? ''}'),
+        title: const Text('Asignar horario'),
       ),
+
       body: vm.loading || profVM.loading
           ? const Center(child: CircularProgressIndicator())
           : profVM.subjectsProfesor.isEmpty
@@ -139,7 +146,6 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
-                        // Día
                         DropdownButtonFormField<String>(
                           value: _dia,
                           decoration: const InputDecoration(
@@ -147,39 +153,36 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
                             border: OutlineInputBorder(),
                           ),
                           items: _dias
-                              .map((d) =>
-                                  DropdownMenuItem(value: d, child: Text(d)))
+                              .map((d) => DropdownMenuItem(
+                                    value: d,
+                                    child: Text(d),
+                                  ))
                               .toList(),
                           onChanged: (v) => setState(() => _dia = v),
-                          validator: (_) => _dia == null ? 'Requerido' : null,
+                          validator: (_) =>
+                              _dia == null ? 'Requerido' : null,
                         ),
+
                         const SizedBox(height: 16),
 
-                        // Hora inicio
                         ListTile(
-                          title: Text(
-                            _horaInicio == null
-                                ? 'Hora inicio'
-                                : 'Inicio: ${_formatTime(_horaInicio!)}',
-                          ),
+                          title: Text(_horaInicio == null
+                              ? 'Hora inicio'
+                              : 'Inicio: ${_formatTime(_horaInicio!)}'),
                           trailing: const Icon(Icons.access_time),
                           onTap: () => _pickTime(true),
                         ),
-                        const SizedBox(height: 16),
 
-                        // Hora fin
                         ListTile(
-                          title: Text(
-                            _horaFin == null
-                                ? 'Hora fin'
-                                : 'Fin: ${_formatTime(_horaFin!)}',
-                          ),
+                          title: Text(_horaFin == null
+                              ? 'Hora fin'
+                              : 'Fin: ${_formatTime(_horaFin!)}'),
                           trailing: const Icon(Icons.access_time),
                           onTap: () => _pickTime(false),
                         ),
+
                         const SizedBox(height: 16),
 
-                        // 🔥 SOLO MATERIAS DEL PROFESOR
                         DropdownButtonFormField<Subject>(
                           value: _subject,
                           decoration: const InputDecoration(
@@ -192,13 +195,14 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
                                     child: Text(s.name ?? ''),
                                   ))
                               .toList(),
-                          onChanged: (v) => setState(() => _subject = v),
+                          onChanged: (v) =>
+                              setState(() => _subject = v),
                           validator: (_) =>
                               _subject == null ? 'Requerido' : null,
                         ),
+
                         const SizedBox(height: 16),
 
-                        // Curso
                         DropdownButtonFormField<Curso>(
                           value: _curso,
                           decoration: const InputDecoration(
@@ -208,20 +212,21 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
                           items: cursoVM.cursos
                               .map((c) => DropdownMenuItem(
                                     value: c,
-                                    child:
-                                        Text('${c.nombre} · ${c.nivel}'),
+                                    child: Text('${c.nombre} · ${c.nivel}'),
                                   ))
                               .toList(),
-                          onChanged: (v) => setState(() {
-                            _curso = v;
-                            _paralelo = null;
-                          }),
+                          onChanged: (v) {
+                            setState(() {
+                              _curso = v;
+                              _paralelo = null;
+                            });
+                          },
                           validator: (_) =>
                               _curso == null ? 'Requerido' : null,
                         ),
+
                         const SizedBox(height: 16),
 
-                        // Paralelo
                         DropdownButtonFormField<Paralelo>(
                           value: _paralelo,
                           decoration: const InputDecoration(
@@ -235,13 +240,14 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
                                         '${p.nombre} · ${p.turno ?? ''}'),
                                   ))
                               .toList(),
-                          onChanged: (v) => setState(() => _paralelo = v),
+                          onChanged: (v) =>
+                              setState(() => _paralelo = v),
                           validator: (_) =>
                               _paralelo == null ? 'Requerido' : null,
                         ),
+
                         const SizedBox(height: 24),
 
-                        // Botón
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(

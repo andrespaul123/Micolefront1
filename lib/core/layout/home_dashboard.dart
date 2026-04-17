@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/tenant_viewmodel.dart';
 
 class HomeDashboard extends StatelessWidget {
-  final void Function(int index) onNavigate;
-
-  const HomeDashboard({super.key, required this.onNavigate});
+  const HomeDashboard({super.key});
+  // 🔥 Se eliminó onNavigate — ahora se usa context.go() directamente.
 
   static const _purple = Color(0xFF4F46E5);
   static const _bgPage = Color(0xFFF5F7FB);
@@ -18,7 +18,6 @@ class HomeDashboard extends StatelessWidget {
     final role     = auth.role;
     final name     = auth.user?.name ?? '';
 
-    // Nombre del colegio para el director, genérico para admin
     final schoolName = role == 'director'
         ? (tenantVM.currentTenant?.name ?? '')
         : 'Admin Panel';
@@ -32,7 +31,7 @@ class HomeDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // ── Hero ──────────────────────────────────────────────────
+              // ── Hero ────────────────────────────────────────────────────
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -45,7 +44,6 @@ class HomeDashboard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        // Logo del colegio o avatar con iniciales
                         _buildHeroLogo(role, tenantVM, name),
                         const SizedBox(width: 14),
                         Expanded(
@@ -55,33 +53,20 @@ class HomeDashboard extends StatelessWidget {
                               Text(
                                 'Hola, ${name.split(' ').first}',
                                 style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                  color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
                               ),
                               Text(
-                                role == 'super-admin'
-                                    ? 'Super Administrador'
-                                    : 'Panel Director',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
-                                  fontSize: 12,
-                                ),
+                                role == 'super-admin' ? 'Super Administrador' : 'Panel Director',
+                                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
                               ),
-                              // Nombre del colegio solo para director
-                              if (role == 'director' &&
-                                  schoolName.isNotEmpty) ...[
+                              if (role == 'director' && schoolName.isNotEmpty) ...[
                                 const SizedBox(height: 2),
                                 Text(
                                   schoolName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1, overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.9),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                    fontSize: 13, fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ],
@@ -89,11 +74,9 @@ class HomeDashboard extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 16),
                     Container(height: 0.5, color: Colors.white.withOpacity(0.25)),
                     const SizedBox(height: 14),
-
                     Row(
                       children: [
                         _Chip(Icons.check_circle_outline, 'Sistema activo'),
@@ -107,7 +90,7 @@ class HomeDashboard extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // ── Super Admin ───────────────────────────────────────────
+              // ── Super Admin ──────────────────────────────────────────────
               if (role == 'super-admin') ...[
                 const _SectionLabel('GESTIÓN DE COLEGIOS'),
                 const SizedBox(height: 12),
@@ -117,7 +100,7 @@ class HomeDashboard extends StatelessWidget {
                   description: 'Ver, editar y eliminar colegios',
                   bgColor: const Color(0xFFEDE9FE),
                   iconColor: const Color(0xFF7C3AED),
-                  onTap: () => onNavigate(1),
+                  onTap: () => context.go('/colegios'),        
                 ),
                 const SizedBox(height: 10),
                 _RowCard(
@@ -126,11 +109,11 @@ class HomeDashboard extends StatelessWidget {
                   description: 'Registrar un colegio con su director',
                   bgColor: const Color(0xFFD1FAE5),
                   iconColor: const Color(0xFF059669),
-                  onTap: () => onNavigate(2),
+                  onTap: () => context.go('/colegios/create'),  // 🔥
                 ),
               ],
 
-              // ── Director ──────────────────────────────────────────────
+              // ── Director ─────────────────────────────────────────────────
               if (role == 'director') ...[
                 const _SectionLabel('GESTIÓN'),
                 const SizedBox(height: 12),
@@ -143,32 +126,24 @@ class HomeDashboard extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
                     _GridCard(
-                      icon: Icons.menu_book_outlined,
-                      label: 'Materias',
-                      bgColor: const Color(0xFFEDE9FE),
-                      iconColor: const Color(0xFF7C3AED),
-                      onTap: () => onNavigate(1),
+                      icon: Icons.menu_book_outlined, label: 'Materias',
+                      bgColor: const Color(0xFFEDE9FE), iconColor: const Color(0xFF7C3AED),
+                      onTap: () => context.go('/materias'),     // 🔥
                     ),
                     _GridCard(
-                      icon: Icons.person_outline,
-                      label: 'Profesores',
-                      bgColor: const Color(0xFFDBEAFE),
-                      iconColor: const Color(0xFF2563EB),
-                      onTap: () => onNavigate(2),
+                      icon: Icons.person_outline, label: 'Profesores',
+                      bgColor: const Color(0xFFDBEAFE), iconColor: const Color(0xFF2563EB),
+                      onTap: () => context.go('/profesores'),   // 🔥
                     ),
                     _GridCard(
-                      icon: Icons.class_outlined,
-                      label: 'Cursos',
-                      bgColor: const Color(0xFFD1FAE5),
-                      iconColor: const Color(0xFF059669),
-                      onTap: () => onNavigate(3),
+                      icon: Icons.class_outlined, label: 'Cursos',
+                      bgColor: const Color(0xFFD1FAE5), iconColor: const Color(0xFF059669),
+                      onTap: () => context.go('/cursos'),       // 🔥
                     ),
                     _GridCard(
-                      icon: Icons.account_tree_outlined,
-                      label: 'Paralelos',
-                      bgColor: const Color(0xFFFEE2E2),
-                      iconColor: const Color(0xFFDC2626),
-                      onTap: () => onNavigate(4),
+                      icon: Icons.account_tree_outlined, label: 'Paralelos',
+                      bgColor: const Color(0xFFFEE2E2), iconColor: const Color(0xFFDC2626),
+                      onTap: () => context.go('/cursos'),       // 🔥 van a cursos para ver paralelos
                     ),
                   ],
                 ),
@@ -179,7 +154,7 @@ class HomeDashboard extends StatelessWidget {
                   description: 'Logo, nombre y configuración',
                   bgColor: const Color(0xFFFEF3C7),
                   iconColor: const Color(0xFFD97706),
-                  onTap: () => onNavigate(5),
+                  onTap: () => context.go('/colegio'),          // 🔥
                 ),
               ],
 
@@ -191,46 +166,28 @@ class HomeDashboard extends StatelessWidget {
     );
   }
 
-  // Logo del colegio en el hero card
-  Widget _buildHeroLogo(
-      String? role, TenantViewModel tenantVM, String name) {
-    final logoUrl =
-        role == 'director' ? tenantVM.currentTenant?.logoUrl : null;
-
+  Widget _buildHeroLogo(String? role, TenantViewModel tenantVM, String name) {
+    final logoUrl = role == 'director' ? tenantVM.currentTenant?.logoUrl : null;
     if (logoUrl != null && logoUrl.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(14),
-        child: Image.network(
-          logoUrl,
-          width: 48,
-          height: 48,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _avatarFallback(name),
-        ),
+        child: Image.network(logoUrl, width: 48, height: 48, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _avatarFallback(name)),
       );
     }
     return _avatarFallback(name);
   }
 
-  Widget _avatarFallback(String name) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        _initials(name),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 17,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
+  Widget _avatarFallback(String name) => Container(
+    width: 48, height: 48,
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(14),
+    ),
+    alignment: Alignment.center,
+    child: Text(_initials(name),
+      style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+  );
 
   String _initials(String name) {
     final p = name.trim().split(' ');
@@ -239,23 +196,14 @@ class HomeDashboard extends StatelessWidget {
   }
 }
 
-// ── Tarjeta fila completa ─────────────────────────────────────────────────────
+// ── Tarjeta fila ──────────────────────────────────────────────────────────────
 class _RowCard extends StatelessWidget {
   final IconData icon;
-  final String label;
-  final String description;
-  final Color bgColor;
-  final Color iconColor;
+  final String label, description;
+  final Color bgColor, iconColor;
   final VoidCallback onTap;
-
-  const _RowCard({
-    required this.icon,
-    required this.label,
-    required this.description,
-    required this.bgColor,
-    required this.iconColor,
-    required this.onTap,
-  });
+  const _RowCard({required this.icon, required this.label, required this.description,
+    required this.bgColor, required this.iconColor, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -267,52 +215,24 @@ class _RowCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFE5E7EB), width: 0.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
+              width: 44, height: 44,
+              decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    description,
-                    style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF6B7280)),
-                  ),
-                ],
-              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF111827))),
+                const SizedBox(height: 2),
+                Text(description, style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+              ]),
             ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: Color(0xFFD1D5DB),
-            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFFD1D5DB)),
           ],
         ),
       ),
@@ -320,21 +240,14 @@ class _RowCard extends StatelessWidget {
   }
 }
 
-// ── Tarjeta grid 2×2 ──────────────────────────────────────────────────────────
+// ── Tarjeta grid ──────────────────────────────────────────────────────────────
 class _GridCard extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color bgColor;
-  final Color iconColor;
+  final Color bgColor, iconColor;
   final VoidCallback onTap;
-
-  const _GridCard({
-    required this.icon,
-    required this.label,
-    required this.bgColor,
-    required this.iconColor,
-    required this.onTap,
-  });
+  const _GridCard({required this.icon, required this.label,
+    required this.bgColor, required this.iconColor, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -346,57 +259,25 @@ class _GridCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFE5E7EB), width: 0.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(11),
-              ),
+              width: 40, height: 40,
+              decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(11)),
               child: Icon(icon, color: iconColor, size: 20),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      'Ver todos',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: const Color(0xFF4F46E5).withOpacity(0.8),
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 9,
-                      color: const Color(0xFF4F46E5).withOpacity(0.8),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF111827))),
+              const SizedBox(height: 2),
+              Row(children: [
+                Text('Ver todos', style: TextStyle(fontSize: 11, color: const Color(0xFF4F46E5).withOpacity(0.8))),
+                Icon(Icons.arrow_forward_ios_rounded, size: 9, color: const Color(0xFF4F46E5).withOpacity(0.8)),
+              ]),
+            ]),
           ],
         ),
       ),
@@ -404,7 +285,6 @@ class _GridCard extends StatelessWidget {
   }
 }
 
-// ── Widgets pequeños ──────────────────────────────────────────────────────────
 class _Chip extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -415,18 +295,12 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 12),
-          const SizedBox(width: 5),
-          Text(label,
-              style: const TextStyle(color: Colors.white, fontSize: 11)),
-        ],
-      ),
+        color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, color: Colors.white, size: 12),
+        const SizedBox(width: 5),
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 11)),
+      ]),
     );
   }
 }
@@ -437,14 +311,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF9CA3AF),
-        letterSpacing: 1.0,
-      ),
-    );
+    return Text(text, style: const TextStyle(
+      fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF9CA3AF), letterSpacing: 1.0));
   }
 }

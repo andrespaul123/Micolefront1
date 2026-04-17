@@ -20,7 +20,7 @@ class ParaleloViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> createParalelo({
+  /* Future<bool> createParalelo({
     required int cursoId,
     required String nombre,
     String? turno,
@@ -38,15 +38,36 @@ class ParaleloViewModel extends ChangeNotifier {
 
     loading = false;
 
-    if (success) {
-      await loadParalelos();
-      return true;
-    }
-
     notifyListeners();
-    return false;
+    return success;
+  } */
+Future<bool> createParalelo({
+  required int cursoId,
+  required String nombre,
+  String? turno,
+  int? capacidad,
+}) async {
+  loading = true;
+  notifyListeners();
+
+  final nuevo = await repository.createParalelo(
+    cursoId: cursoId,
+    nombre: nombre,
+    turno: turno,
+    capacidad: capacidad,
+  );
+
+  if (nuevo != null) {
+
+    
+    paralelos.add(nuevo);
   }
 
+  loading = false;
+  notifyListeners();
+
+  return nuevo != null;
+}
 
   Future<bool> deleteParalelo(int id) async {
     loading = true;
@@ -54,10 +75,20 @@ class ParaleloViewModel extends ChangeNotifier {
 
     final success = await repository.deleteParalelo(id);
 
-    if (success) await loadParalelos();
+    /* if (success) await loadParalelos(); */
 
     loading = false;
     notifyListeners();
     return success;
   }
+
+  Future<void> loadParalelosByCurso(int periodoId, int cursoId) async {
+  loading = true;
+  notifyListeners();
+
+  paralelos = await repository.getParalelosByCurso(periodoId, cursoId);
+
+  loading = false;
+  notifyListeners();
+}
 }

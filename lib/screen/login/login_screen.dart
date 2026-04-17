@@ -1,8 +1,10 @@
+// ════════════════════════════════════════════════════════════════════════════
+//  LOGIN SCREEN
+// ════════════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-import '../../core/layout/main_layout.dart';
-import 'register_screen.dart';
 import '../../core/widgest/auth_card.dart';
 import '../../core/widgest/auth_input.dart';
 
@@ -15,8 +17,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-
-  final emailController = TextEditingController();
+  final emailController    = TextEditingController();
   final passwordController = TextEditingController();
 
   @override
@@ -28,8 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF4F46E5), Color(0xFF3B82F6)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
           ),
         ),
         child: AuthCard(
@@ -40,76 +40,40 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const Icon(Icons.school, size: 60, color: Colors.blue),
                 const SizedBox(height: 10),
-                const Text(
-                  'MI COLE',
-                  style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
-                ),
+                const Text('MI COLE', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
 
                 AuthInput(
-                  controller: emailController,
-                  label: 'Email',
-                  icon: Icons.email,
-                  validator: (v) =>
-                      v!.isEmpty ? 'Campo requerido' : null,
+                  controller: emailController, label: 'Email', icon: Icons.email,
+                  validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
                 ),
-
                 const SizedBox(height: 16),
-
                 AuthInput(
-                  controller: passwordController,
-                  label: 'Contraseña',
-                  icon: Icons.lock,
-                  obscure: true,
-                  validator: (v) =>
-                      v!.isEmpty ? 'Campo requerido' : null,
+                  controller: passwordController, label: 'Contraseña', icon: Icons.lock,
+                  obscure: true, validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
                 ),
-
                 const SizedBox(height: 20),
 
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: auth.loading
-                        ? null
-                        : () async {
-                            if (!_formKey.currentState!.validate())
-                              return;
-
-                            final success = await auth.login(
-                              emailController.text.trim(),
-                              passwordController.text,
-                            );
-
-                            if (success && mounted) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const MainLayout(),
-                                ),
-                              );
-                            }
-                          },
+                    onPressed: auth.loading ? null : () async {
+                      if (!_formKey.currentState!.validate()) return;
+                      final success = await auth.login(
+                        emailController.text.trim(),
+                        passwordController.text,
+                      );
+                      if (success && mounted) context.go('/home'); // 🔥
+                    },
                     child: auth.loading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white)
+                        ? const CircularProgressIndicator(color: Colors.white)
                         : const Text('Iniciar sesión'),
                   ),
                 ),
 
                 TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RegisterScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                      '¿No tienes cuenta? Regístrate'),
+                  onPressed: () => context.go('/register'), // 🔥
+                  child: const Text('¿No tienes cuenta? Regístrate'),
                 ),
               ],
             ),

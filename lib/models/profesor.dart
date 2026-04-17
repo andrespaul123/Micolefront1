@@ -2,7 +2,6 @@ class Profesor {
   final int? id;
   final String? codigo;
   final String? especialidad;
-
   final String? name;
   final String? email;
 
@@ -15,7 +14,7 @@ class Profesor {
   });
 
   factory Profesor.fromJson(Map<String, dynamic> json) {
-    return Profesor(
+    return Profesor(  
       id: json['id'],
       codigo: json['codigo_profesor'],
       especialidad: json['especialidad'],
