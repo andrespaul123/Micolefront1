@@ -6,7 +6,11 @@ class ParaleloViewModel extends ChangeNotifier {
   final ParaleloRepository repository;
 
   bool loading = false;
+  bool creating = false;
+   bool initialized = false;
   List<Paralelo> paralelos = [];
+  int? _periodoId;
+  int? _cursoId;
 
   ParaleloViewModel({required this.repository});
 
@@ -47,26 +51,29 @@ Future<bool> createParalelo({
   String? turno,
   int? capacidad,
 }) async {
-  loading = true;
+  if (creating) return false;
+
+  creating = true;
   notifyListeners();
 
-  final nuevo = await repository.createParalelo(
-    cursoId: cursoId,
-    nombre: nombre,
-    turno: turno,
-    capacidad: capacidad,
-  );
+  try {
+    final nuevo = await repository.createParalelo(
+      cursoId: cursoId,
+      nombre: nombre,
+      turno: turno,
+      capacidad: capacidad,
+    );
 
-  if (nuevo != null) {
+    if (nuevo != null) {
+      // 🔥 ESTO ES LO QUE TE HACE FUNCIONAR COMO ANTES
+      paralelos.add(nuevo);
+    }
 
-    
-    paralelos.add(nuevo);
+    return nuevo != null;
+  } finally {
+    creating = false;
+    notifyListeners();
   }
-
-  loading = false;
-  notifyListeners();
-
-  return nuevo != null;
 }
 
   Future<bool> deleteParalelo(int id) async {
@@ -74,6 +81,7 @@ Future<bool> createParalelo({
     notifyListeners();
 
     final success = await repository.deleteParalelo(id);
+    if(success){}
 
     /* if (success) await loadParalelos(); */
 
@@ -82,7 +90,8 @@ Future<bool> createParalelo({
     return success;
   }
 
-  Future<void> loadParalelosByCurso(int periodoId, int cursoId) async {
+   Future<void> loadParalelosByCurso(int periodoId, int cursoId) async {
+    
   loading = true;
   notifyListeners();
 
@@ -90,5 +99,22 @@ Future<bool> createParalelo({
 
   loading = false;
   notifyListeners();
-}
+} 
+/* Future<void> loadParalelosByCurso(int periodoId, int cursoId) async {
+    _periodoId  = periodoId;
+    _cursoId    = cursoId;
+    loading     = true;
+    initialized = false;
+    notifyListeners();
+
+    paralelos   = await repository.getParalelosByCurso(periodoId, cursoId);
+    loading     = false;
+    initialized = true;
+    notifyListeners();
+  }
+
+  Future<void> reload() async {
+    if (_periodoId == null || _cursoId == null) return;
+    await loadParalelosByCurso(_periodoId!, _cursoId!);
+  } */
 }

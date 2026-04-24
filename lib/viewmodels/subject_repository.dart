@@ -6,29 +6,33 @@ class SubjectViewModel extends ChangeNotifier {
   final SubjectRepository repository;
 
   bool loading = false;
+  bool creating = false;
   List<Subject> subjects = [];
 
   SubjectViewModel({required this.repository});
 
   // CREAR
+  // 🔥 CREAR
   Future<bool> createSubject(String name) async {
-    loading = true;
+    if (creating) return false; // evita doble click
+
+    creating = true;
     notifyListeners();
 
-    final subject = await repository.createSubject(name);
+    try {
+      final subject = await repository.createSubject(name);
 
-    loading = false;
+      if (subject != null) {
+        await loadSubjects(); // 🔥 no recarga toda la lista
+        return true;
+      }
 
-    if (subject != null) {
-      subjects.add(subject);
+      return false;
+    } finally {
+      creating = false;
       notifyListeners();
-      return true;
     }
-
-    notifyListeners();
-    return false;
   }
-
   // LISTAR
   Future<void> loadSubjects() async {
     loading = true;

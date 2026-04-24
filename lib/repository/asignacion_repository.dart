@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import '../models/asignacion.dart';
+import '../models/horario_curso.dart';
 
 class AsignacionRepository {
   final Dio _dio;
@@ -22,8 +24,36 @@ class AsignacionRepository {
     }
   }
 
+Future<Map<String, List<HorarioItem>>> getHorarioCurso({
+  required int periodoId,
+  required int cursoId,
+  required int paraleloId,
+}) async {
+  try {
+    final response = await _dio.get(
+      '/periodos/$periodoId/cursos/$cursoId/paralelos/$paraleloId/horario',
+    );
+
+    final Map<String, dynamic> raw =
+        response.data['horario'] as Map<String, dynamic>? ?? {};
+
+    return raw.map((dia, lista) {
+      final items = (lista as List)
+          .map((e) => HorarioItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return MapEntry(dia, items);
+    });
+  } catch (e) {
+    if (e is DioException) {
+      debugPrint('ERROR HORARIO CURSO: ${e.response?.data}');
+    }
+    return {};
+  }
+}
+
   // ⚠️ Confirma el endpoint con tu backender
   Future<String?> crearAsignacion({
+  required int periodoId,
   required int profesorId,
   required int subjectId,
   required int cursoId,
@@ -33,7 +63,7 @@ class AsignacionRepository {
   required String horaFin,
 }) async {
   try {
-    await _dio.post('/asignaciones', data: {
+    await _dio.post('/periodos/$periodoId/asignaciones', data: {
       'profesor_id': profesorId,
       'subject_id': subjectId,
       'curso_id': cursoId,
@@ -43,7 +73,7 @@ class AsignacionRepository {
       'hora_fin': horaFin,
     });
 
-    return null; // ✅ éxito
+    return null;
   } catch (e) {
     if (e is DioException) {
       final data = e.response?.data;

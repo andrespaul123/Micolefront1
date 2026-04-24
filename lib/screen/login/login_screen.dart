@@ -1,6 +1,3 @@
-// ════════════════════════════════════════════════════════════════════════════
-//  LOGIN SCREEN
-// ════════════════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -63,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         emailController.text.trim(),
                         passwordController.text,
                       );
-                      if (success && mounted) context.go('/home'); // 🔥
+                      if (success && mounted) context.go('/home'); 
                     },
                     child: auth.loading
                         ? const CircularProgressIndicator(color: Colors.white)
@@ -72,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 TextButton(
-                  onPressed: () => context.go('/register'), // 🔥
+                  onPressed: () => context.go('/register'),
                   child: const Text('¿No tienes cuenta? Regístrate'),
                 ),
               ],

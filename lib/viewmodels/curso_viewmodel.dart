@@ -9,6 +9,7 @@ class CursoViewModel extends ChangeNotifier {
   final AcademicPeriodRepository periodoRepository;
 
   bool loading = false;
+  bool creating = false;
   List<Curso> cursos = [];
   AcademicPeriod? periodoActivo;
   String? errorPeriodo;
@@ -40,30 +41,38 @@ class CursoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> createCurso({
+   Future<bool> createCurso({
     required String nombre,
     required String nivel,
     String? descripcion,
   }) async {
-    if (periodoActivo == null) return false;
+    if (creating) return false;
 
-    loading = true;
-    notifyListeners();
-
-    final success = await repository.createCurso(
-      periodoId: periodoActivo!.id!,
-      nombre: nombre,
-      nivel: nivel,
-      descripcion: descripcion,
-    );
-
-    loading = false;
-    if (success) {
-      await loadCursos();
-      return true;
+    if (periodoActivo == null) {
+      await loadCursos(); // 🔥 asegura periodo
+      if (periodoActivo == null) return false;
     }
+
+    creating = true;
     notifyListeners();
-    return false;
+
+    try {
+      final success = await repository.createCurso(
+        periodoId: periodoActivo!.id!,
+        nombre: nombre,
+        nivel: nivel,
+        descripcion: descripcion,
+      );
+
+      if (success) {
+        await loadCursos();
+      }
+
+      return success;
+    } finally {
+      creating = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> deleteCurso(int id) async {

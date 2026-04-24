@@ -27,9 +27,14 @@ class _PadreCreateScreenState extends State<PadreCreateScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      body: vm.loading
-          ? const Center(child: CircularProgressIndicator())
-          : AuthCard(
+
+      // 🔥 YA NO usamos vm.loading aquí
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: AuthCard(
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -40,8 +45,8 @@ class _PadreCreateScreenState extends State<PadreCreateScreen> {
                     const SizedBox(height: 10),
                     const Text(
                       'Crear Padre de Familia',
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20),
 
@@ -49,7 +54,8 @@ class _PadreCreateScreenState extends State<PadreCreateScreen> {
                       controller: nameController,
                       label: 'Nombre',
                       icon: Icons.person,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
+                      validator: (v) =>
+                          v!.isEmpty ? 'Campo requerido' : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -57,7 +63,8 @@ class _PadreCreateScreenState extends State<PadreCreateScreen> {
                       controller: emailController,
                       label: 'Email',
                       icon: Icons.email,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
+                      validator: (v) =>
+                          v!.isEmpty ? 'Campo requerido' : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -66,7 +73,8 @@ class _PadreCreateScreenState extends State<PadreCreateScreen> {
                       label: 'Contraseña',
                       icon: Icons.lock,
                       obscure: true,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
+                      validator: (v) =>
+                          v!.isEmpty ? 'Campo requerido' : null,
                     ),
                     const SizedBox(height: 16),
 
@@ -89,41 +97,71 @@ class _PadreCreateScreenState extends State<PadreCreateScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () async {
-                          if (!_formKey.currentState!.validate()) return;
+                        // 🔥 USAMOS creating
+                        onPressed: vm.creating
+                            ? null
+                            : () async {
+                                if (!_formKey.currentState!.validate()) return;
 
-                          final success = await vm.createPadre(
-                            name: nameController.text,
-                            email: emailController.text,
-                            password: passwordController.text,
-                            telefono: telefonoController.text.isEmpty
-                                ? null
-                                : telefonoController.text,
-                            ocupacion: ocupacionController.text.isEmpty
-                                ? null
-                                : ocupacionController.text,
-                          );
+                                FocusScope.of(context).unfocus(); // UX
 
-                          if (success && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Padre creado correctamente')),
-                            );
-                            context.go('/padres'); // 🔥 CAMBIO CLAVE
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Error al crear')),
-                            );
-                          }
-                        },
-                        child: const Text('Crear Padre'),
+                                final success = await vm.createPadre(
+                                  name: nameController.text.trim(),
+                                  email: emailController.text.trim(),
+                                  password:
+                                      passwordController.text.trim(),
+                                  telefono:
+                                      telefonoController.text.isEmpty
+                                          ? null
+                                          : telefonoController.text,
+                                  ocupacion:
+                                      ocupacionController.text.isEmpty
+                                          ? null
+                                          : ocupacionController.text,
+                                );
+
+                                if (!mounted) return;
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Padre creado correctamente'),
+                                    ),
+                                  );
+
+                                  context.go('/padres');
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Error al crear'),
+                                    ),
+                                  );
+                                }
+                              },
+
+                        // 🔥 LOADER SOLO EN BOTÓN
+                        child: vm.creating
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Crear Padre'),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+          ),
+        ),
+      ),
     );
   }
 }

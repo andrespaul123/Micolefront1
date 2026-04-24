@@ -49,9 +49,7 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
   }
 
   String _formatTime(TimeOfDay t) {
-    final h = t.hour.toString().padLeft(2, '0');
-    final m = t.minute.toString().padLeft(2, '0');
-    return '$h:$m:00';
+    return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}:00';
   }
 
   Future<void> _pickTime(bool isInicio) async {
@@ -74,9 +72,14 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
   Future<void> _guardar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_horaInicio == null || _horaFin == null) {
+    if (_dia == null ||
+        _subject == null ||
+        _curso == null ||
+        _paralelo == null ||
+        _horaInicio == null ||
+        _horaFin == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona hora inicio y fin')),
+        const SnackBar(content: Text('Completa todos los campos')),
       );
       return;
     }
@@ -109,13 +112,28 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Horario asignado correctamente')),
       );
-
       context.go('/profesores');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error)),
       );
     }
+  }
+
+  Widget _label(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, top: 10),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -130,135 +148,97 @@ class _AsignarHorarioScreenState extends State<AsignarHorarioScreen> {
         : paraleVM.paralelos.where((p) => p.cursoId == _curso!.id).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Asignar horario'),
-      ),
+      appBar: AppBar(title: const Text('Asignar horario')),
 
       body: vm.loading || profVM.loading
           ? const Center(child: CircularProgressIndicator())
-          : profVM.subjectsProfesor.isEmpty
-              ? const Center(
-                  child: Text('Este profesor no tiene materias asignadas'),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        DropdownButtonFormField<String>(
-                          value: _dia,
-                          decoration: const InputDecoration(
-                            labelText: 'Día',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: _dias
-                              .map((d) => DropdownMenuItem(
-                                    value: d,
-                                    child: Text(d),
-                                  ))
-                              .toList(),
-                          onChanged: (v) => setState(() => _dia = v),
-                          validator: (_) =>
-                              _dia == null ? 'Requerido' : null,
-                        ),
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
 
-                        const SizedBox(height: 16),
-
-                        ListTile(
-                          title: Text(_horaInicio == null
-                              ? 'Hora inicio'
-                              : 'Inicio: ${_formatTime(_horaInicio!)}'),
-                          trailing: const Icon(Icons.access_time),
-                          onTap: () => _pickTime(true),
-                        ),
-
-                        ListTile(
-                          title: Text(_horaFin == null
-                              ? 'Hora fin'
-                              : 'Fin: ${_formatTime(_horaFin!)}'),
-                          trailing: const Icon(Icons.access_time),
-                          onTap: () => _pickTime(false),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        DropdownButtonFormField<Subject>(
-                          value: _subject,
-                          decoration: const InputDecoration(
-                            labelText: 'Materia',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: profVM.subjectsProfesor
-                              .map((s) => DropdownMenuItem(
-                                    value: s,
-                                    child: Text(s.name ?? ''),
-                                  ))
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _subject = v),
-                          validator: (_) =>
-                              _subject == null ? 'Requerido' : null,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        DropdownButtonFormField<Curso>(
-                          value: _curso,
-                          decoration: const InputDecoration(
-                            labelText: 'Curso',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: cursoVM.cursos
-                              .map((c) => DropdownMenuItem(
-                                    value: c,
-                                    child: Text('${c.nombre} · ${c.nivel}'),
-                                  ))
-                              .toList(),
-                          onChanged: (v) {
-                            setState(() {
-                              _curso = v;
-                              _paralelo = null;
-                            });
-                          },
-                          validator: (_) =>
-                              _curso == null ? 'Requerido' : null,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        DropdownButtonFormField<Paralelo>(
-                          value: _paralelo,
-                          decoration: const InputDecoration(
-                            labelText: 'Paralelo',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: paralelos
-                              .map((p) => DropdownMenuItem(
-                                    value: p,
-                                    child: Text(
-                                        '${p.nombre} · ${p.turno ?? ''}'),
-                                  ))
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _paralelo = v),
-                          validator: (_) =>
-                              _paralelo == null ? 'Requerido' : null,
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: vm.loading ? null : _guardar,
-                            child: const Text('Guardar'),
-                          ),
-                        ),
-                      ],
+                    _label("Día"),
+                    DropdownButtonFormField<String>(
+                      value: _dia,
+                      items: _dias
+                          .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                          .toList(),
+                      onChanged: (v) => setState(() => _dia = v),
                     ),
-                  ),
+
+                    _label("Horario"),
+                    ListTile(
+                      title: Text(_horaInicio == null
+                          ? 'Hora inicio'
+                          : 'Inicio: ${_formatTime(_horaInicio!)}'),
+                      trailing: const Icon(Icons.access_time),
+                      onTap: () => _pickTime(true),
+                    ),
+
+                    ListTile(
+                      title: Text(_horaFin == null
+                          ? 'Hora fin'
+                          : 'Fin: ${_formatTime(_horaFin!)}'),
+                      trailing: const Icon(Icons.access_time),
+                      onTap: () => _pickTime(false),
+                    ),
+
+                    _label("Materia"),
+                    DropdownButtonFormField<Subject>(
+                      value: _subject,
+                      items: profVM.subjectsProfesor
+                          .map((s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(s.name ?? ''),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setState(() => _subject = v),
+                    ),
+
+                    _label("Curso"),
+                    DropdownButtonFormField<Curso>(
+                      value: _curso,
+                      items: cursoVM.cursos
+                          .map((c) => DropdownMenuItem(
+                                value: c,
+                                child: Text('${c.nombre} · ${c.nivel}'),
+                              ))
+                          .toList(),
+                      onChanged: (v) {
+                        setState(() {
+                          _curso = v;
+                          _paralelo = null;
+                        });
+                      },
+                    ),
+
+                    _label("Paralelo"),
+                    DropdownButtonFormField<Paralelo>(
+                      value: _paralelo,
+                      items: paralelos
+                          .map((p) => DropdownMenuItem(
+                                value: p,
+                                child: Text('${p.nombre} · ${p.turno ?? ''}'),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setState(() => _paralelo = v),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: vm.loading ? null : _guardar,
+                        child: const Text('Guardar'),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
     );
   }
 }

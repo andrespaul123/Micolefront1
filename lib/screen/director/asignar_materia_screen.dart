@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../models/subject.dart';
 import '../../viewmodels/profesor_viewmodel.dart';
-import '../../viewmodels/subject_repository.dart'; 
+import '../../viewmodels/subject_repository.dart';
 import '../../core/widgest/auth_card.dart';
 
 class AsignarMateriaScreen extends StatefulWidget {
@@ -24,22 +24,21 @@ class _AsignarMateriaScreenState extends State<AsignarMateriaScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        Provider.of<SubjectViewModel>(context, listen: false)
-            .loadSubjects());
+    Future.microtask(() {
+      context.read<SubjectViewModel>().loadSubjects();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final subjectVM = Provider.of<SubjectViewModel>(context);
-    final profesorVM = Provider.of<ProfesorViewModel>(context);
+    final subjectVM = context.watch<SubjectViewModel>();
+    final profesorVM = context.watch<ProfesorViewModel>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         title: const Text('Asignar materia'),
       ),
-
       body: subjectVM.loading
           ? const Center(child: CircularProgressIndicator())
           : AuthCard(
@@ -53,14 +52,13 @@ class _AsignarMateriaScreenState extends State<AsignarMateriaScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+
                   const SizedBox(height: 20),
 
                   DropdownButtonFormField<Subject>(
                     value: selectedSubject,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
                     ),
                     hint: const Text('Elegir materia'),
                     items: subjectVM.subjects
@@ -80,9 +78,19 @@ class _AsignarMateriaScreenState extends State<AsignarMateriaScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.check),
-                      label: const Text('Asignar'),
 
-                      onPressed: profesorVM.loading
+                      label: profesorVM.assigning
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Asignar'),
+
+                      onPressed: profesorVM.assigning
                           ? null
                           : () async {
                               if (selectedSubject == null) {
@@ -102,20 +110,19 @@ class _AsignarMateriaScreenState extends State<AsignarMateriaScreen> {
 
                               if (!mounted) return;
 
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Materia asignada'),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    success
+                                        ? 'Materia asignada'
+                                        : 'Error al asignar',
                                   ),
-                                );
+                                ),
+                              );
 
+                              if (success) {
+                                selectedSubject = null;
                                 context.go('/profesores');
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Error al asignar'),
-                                  ),
-                                );
                               }
                             },
                     ),

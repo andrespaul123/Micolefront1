@@ -8,6 +8,9 @@ class TenantViewModel extends ChangeNotifier {
   final TenantRepository repository;
 
   bool loading = false;
+  bool creating = false;
+  bool updating = false;
+  bool uploading = false;
   TenantResponse? tenant;
    Tenant? currentTenant;
    List<Tenant> tenants = [];
@@ -34,60 +37,79 @@ class TenantViewModel extends ChangeNotifier {
   notifyListeners();
   }
 
-  Future<bool> createTenant({
+   Future<bool> createTenant({
     required String name,
     required String slug,
     required String directorName,
     required String directorEmail,
     required String password,
   }) async {
-    loading = true;
+    if (creating) return false;
+
+    creating = true;
     notifyListeners();
 
-    tenant = await repository.createTenant(
-      name: name,
-      slug: slug,
-      directorName: directorName,
-      directorEmail: directorEmail,
-      password: password,
-    );
+    try {
+      tenant = await repository.createTenant(
+        name: name,
+        slug: slug,
+        directorName: directorName,
+        directorEmail: directorEmail,
+        password: password,
+      );
 
-    loading = false;
-    notifyListeners();
+      if (tenant != null) {
+        await loadTenants();
+      }
 
-    return tenant != null;
+      return tenant != null;
+    } finally {
+      creating = false;
+      notifyListeners();
+    }
   }
 
   // 🔥 CAMBIAR firma
 Future<bool> uploadLogo(XFile file) async {
-  loading = true;
-  notifyListeners();
+    if (uploading) return false;
 
-  final bytes = await file.readAsBytes();
-  final success = await repository.uploadLogo(bytes, file.name);
+    uploading = true;
+    notifyListeners();
 
-  loading = false;
-  notifyListeners();
-  return success;
-}
+    final bytes = await file.readAsBytes();
+    final success = await repository.uploadLogo(bytes, file.name);
+
+    uploading = false;
+    notifyListeners();
+    return success;
+  }
+
 
   // 🔥 EDITAR nombre y slug
-  Future<bool> updateTenant({
+ Future<bool> updateTenant({
     required String name,
     required String slug,
   }) async {
-    loading = true;
+    if (updating) return false;
+
+    updating = true;
     notifyListeners();
 
-    final updated = await repository.updateTenant(name: name, slug: slug);
+    try {
+      final updated = await repository.updateTenant(
+        name: name,
+        slug: slug,
+      );
 
-    if (updated != null) {
-      currentTenant = updated;
+      if (updated != null) {
+        currentTenant = updated;
+      }
+
+      return updated != null;
+    } finally {
+      updating = false;
+      notifyListeners();
     }
-
-    loading = false;
-    notifyListeners();
-    return updated != null;
   }
 
    Future<bool> deleteTenant(int id) async {

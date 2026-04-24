@@ -25,6 +25,9 @@ import '../../screen/estudiante/estudiante_create_screen.dart';
 import '../../screen/padre_familia/padre_list_screen.dart';
 import '../../screen/padre_familia/padre_create_screen.dart';
 import '../../screen/director/horario_profesor_screen.dart';
+import '../../screen/horario/horario_curso_screen.dart';
+import '../../screen/circular/circular_create_screen.dart';
+import '../../screen/circular/circular_list_screen.dart';
 
 // Super Admin
 import '../../screen/tenant/tenant_list_screen.dart';
@@ -174,6 +177,17 @@ GoRouter createRouter(AuthViewModel authViewModel) {
             return ParaleloCreateScreen(cursoId: cursoId);
           },
         ),
+        GoRoute(
+          path: ':paraleloId/horario',
+          builder: (_, state) {
+            final cursoId    = int.parse(state.pathParameters['cursoId']!);
+            final paraleloId = int.parse(state.pathParameters['paraleloId']!);
+            return HorarioCursoScreen(
+              cursoId:    cursoId,
+              paraleloId: paraleloId,
+            );
+          },
+        ),
       ],
     ),
   ],
@@ -214,6 +228,16 @@ GoRouter createRouter(AuthViewModel authViewModel) {
               ),
             ],
           ),
+          GoRoute(
+       path: '/circulares',
+  builder: (_, __) => const CircularListScreen(),
+  routes: [
+    GoRoute(
+      path: 'create',
+      builder: (_, __) => const CircularCreateScreen(),
+    ),
+  ],
+),
         ],
       ),
     ],

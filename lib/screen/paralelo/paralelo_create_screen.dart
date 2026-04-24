@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../viewmodels/paralelo_viewmodel.dart';
 import '../../viewmodels/curso_viewmodel.dart';
 import '../../core/widgest/auth_card.dart';
@@ -20,13 +21,22 @@ class ParaleloCreateScreen extends StatefulWidget {
 
 class _ParaleloCreateScreenState extends State<ParaleloCreateScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final nombreController = TextEditingController();
   final turnoController = TextEditingController();
   final capacidadController = TextEditingController();
 
   @override
+  void dispose() {
+    nombreController.dispose();
+    turnoController.dispose();
+    capacidadController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final vm = Provider.of<ParaleloViewModel>(context);
+    final vm = context.watch<ParaleloViewModel>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
@@ -35,90 +45,119 @@ class _ParaleloCreateScreenState extends State<ParaleloCreateScreen> {
         title: const Text('Nuevo Paralelo'),
       ),
 
-      body: vm.loading
+      body: vm.creating
           ? const Center(child: CircularProgressIndicator())
-          : AuthCard(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.account_tree, size: 60, color: Colors.blue),
-                    const SizedBox(height: 10),
+          : Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: AuthCard(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.account_tree,
+                            size: 60,
+                            color: Colors.blue,
+                          ),
 
-                    const Text(
-                      'Crear Paralelo',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
+                          const SizedBox(height: 10),
 
-                    const SizedBox(height: 20),
+                          const Text(
+                            'Crear Paralelo',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
 
-                    AuthInput(
-                      controller: nombreController,
-                      label: 'Nombre (A, B, C...)',
-                      icon: Icons.label,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
-                    ),
+                          const SizedBox(height: 20),
 
-                    const SizedBox(height: 16),
+                          AuthInput(
+                            controller: nombreController,
+                            label: 'Nombre (A, B, C...)',
+                            icon: Icons.label,
+                            validator: (v) =>
+                                v == null || v.isEmpty ? 'Campo requerido' : null,
+                          ),
 
-                    AuthInput(
-                      controller: turnoController,
-                      label: 'Turno',
-                      icon: Icons.schedule,
-                      validator: (_) => null,
-                    ),
+                          const SizedBox(height: 16),
 
-                    const SizedBox(height: 16),
+                          AuthInput(
+                            controller: turnoController,
+                            label: 'Turno',
+                            icon: Icons.schedule,
+                            validator: (_) => null,
+                          ),
 
-                    AuthInput(
-                      controller: capacidadController,
-                      label: 'Capacidad',
-                      icon: Icons.people,
-                      validator: (_) => null,
-                    ),
+                          const SizedBox(height: 16),
 
-                    const SizedBox(height: 20),
+                          AuthInput(
+                            controller: capacidadController,
+                            label: 'Capacidad',
+                            icon: Icons.people,
+                            validator: (_) => null,
+                          ),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (!_formKey.currentState!.validate()) return;
+                          const SizedBox(height: 20),
 
-                          final success = await vm.createParalelo(
-                            cursoId: widget.cursoId,
-                            nombre: nombreController.text.trim(),
-                            turno: turnoController.text.trim().isEmpty
-                                ? null
-                                : turnoController.text.trim(),
-                            capacidad: capacidadController.text.trim().isEmpty
-                                ? null
-                                : int.tryParse(capacidadController.text.trim()),
-                          );
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (!_formKey.currentState!.validate()) return;
 
-                          if (!mounted) return;
+                                final vmParalelo =
+                                    context.read<ParaleloViewModel>();
 
-                          if (success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Paralelo creado correctamente'),
-                              ),
-                            );
+                                final success =
+                                    await vmParalelo.createParalelo(
+                                  cursoId: widget.cursoId,
+                                  nombre: nombreController.text.trim(),
+                                  turno: turnoController.text.trim().isEmpty
+                                      ? null
+                                      : turnoController.text.trim(),
+                                  capacidad:
+                                      capacidadController.text.trim().isEmpty
+                                          ? null
+                                          : int.tryParse(
+                                              capacidadController.text.trim(),
+                                            ),
+                                );
 
-                            context.go('/cursos/${widget.cursoId}/paralelos');
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Error al crear'),
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Crear Paralelo'),
+                                if (!mounted) return;
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Paralelo creado correctamente',
+                                      ),
+                                    ),
+                                  );
+
+                                  // 🔥 solo navegar, la lista ya se actualiza con add()
+                                  context.go(
+                                    '/cursos/${widget.cursoId}/paralelos',
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Error al crear'),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Crear Paralelo'),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

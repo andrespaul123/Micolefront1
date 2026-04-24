@@ -6,6 +6,7 @@ class AcademicPeriodViewModel extends ChangeNotifier {
   final AcademicPeriodRepository repository;
 
   bool loading = false;
+  bool creating = false;
   List<AcademicPeriod> periodos = [];
   AcademicPeriod? periodoActivo;
   String? error;
@@ -31,9 +32,11 @@ class AcademicPeriodViewModel extends ChangeNotifier {
     required String fechaFin,
     bool activo = false,
   }) async {
-    loading = true;
-    notifyListeners();
+    if(creating) return false;
 
+    creating = true;
+    notifyListeners();
+try{
     final result = await repository.createPeriodo(
       nombre: nombre,
       fechaInicio: fechaInicio,
@@ -41,16 +44,17 @@ class AcademicPeriodViewModel extends ChangeNotifier {
       activo: activo,
     );
 
-    loading = false;
+    
     if (result != null) {
       await loadPeriodos();
-      if (activo) periodoActivo = result;
-      notifyListeners();
-      return true;
+    // periodos.add(result);
+     return true;
     }
-    notifyListeners();
     return false;
-  }
+  }finally{
+    creating = false;
+    notifyListeners();
+}  }
 
   Future<bool> activarPeriodo(int id) async {
     loading = true;

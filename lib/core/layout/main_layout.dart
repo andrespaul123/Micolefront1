@@ -37,7 +37,17 @@ class _MainLayoutState extends State<MainLayout> {
     _NavTab(Icons.class_outlined,          Icons.class_,          'Cursos',     '/cursos'),
     _NavTab(Icons.calendar_month_outlined, Icons.calendar_month,  'Períodos',   '/periodos'),
     _NavTab(Icons.school_outlined,         Icons.school,          'Colegio',    '/colegio'),
+    _NavTab(Icons.campaign_outlined, Icons.campaign, 'Circulares', '/circulares'),
   ];
+   static const _profesorTabs = [
+    _NavTab(Icons.home_outlined,     Icons.home,     'Inicio',     '/home'),
+    _NavTab(Icons.campaign_outlined, Icons.campaign, 'Circulares', '/circulares'),
+  ];
+  static const _estudianteTabs = [
+  _NavTab(Icons.home_outlined, Icons.home, 'Inicio', '/home'),
+  _NavTab(Icons.campaign_outlined, Icons.campaign, 'Circulares', '/circulares'),
+
+];
 
   // ── Tabs super-admin ──────────────────────────────────────────────────────
   static const _adminTabs = [
@@ -73,7 +83,7 @@ class _MainLayoutState extends State<MainLayout> {
     final tenantVM = Provider.of<TenantViewModel>(context);
     final role     = auth.role;
 
-    final tabs          = role == 'super-admin' ? _adminTabs : _directorTabs;
+    final tabs          = role == 'super-admin' ? _adminTabs : role == 'profesor' ?  _profesorTabs :role=='estudiante' ?_estudianteTabs : _directorTabs;
     final selectedIndex = _selectedIndex(tabs);
 
     return Scaffold(

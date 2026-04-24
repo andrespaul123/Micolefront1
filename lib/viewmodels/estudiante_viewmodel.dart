@@ -7,6 +7,7 @@ class EstudianteViewModel extends ChangeNotifier {
   EstudianteViewModel({required this.repository});
 
   bool loading = false;
+  bool creating = false;
   List<Estudiante> estudiantes = [];
 
   Future<void> loadEstudiantes() async {
@@ -23,15 +24,29 @@ class EstudianteViewModel extends ChangeNotifier {
     required String password,
     required String codigo,
   }) async {
-    loading = true;
+    if (creating) return false; 
+
+    creating = true;
     notifyListeners();
-    final success = await repository.createEstudiante(
-      name: name, email: email, password: password, codigo: codigo,
-    );
-    loading = false;
-    if (success) await loadEstudiantes();
-    notifyListeners();
-    return success;
+
+    try{
+      final success = await repository.createEstudiante(
+        name: name,
+        email: email,
+        password: password,
+        codigo: codigo,
+      );
+
+      if (success) {
+        await loadEstudiantes(); 
+      }
+
+      return success;
+    } finally {
+      creating = false;
+      notifyListeners();
+    }
+
   }
 
   Future<bool> deleteEstudiante(int id) async {

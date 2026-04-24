@@ -27,90 +27,107 @@ class _EstudianteCreateScreenState extends State<EstudianteCreateScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      body: vm.loading
-          ? const Center(child: CircularProgressIndicator())
-          : AuthCard(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.school, size: 60, color: Colors.blue),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Crear Estudiante',
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
+      body: Center(
+  child: SingleChildScrollView(
+    padding: const EdgeInsets.all(20),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: AuthCard(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.school, size: 60, color: Colors.blue),
+              const SizedBox(height: 10),
+              const Text(
+                'Crear Estudiante',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
 
-                    AuthInput(
-                      controller: nameController,
-                      label: 'Nombre',
-                      icon: Icons.person,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
-                    ),
-                    const SizedBox(height: 16),
+              AuthInput(
+                controller: nameController,
+                label: 'Nombre',
+                icon: Icons.person,
+                validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
+              ),
+              const SizedBox(height: 16),
 
-                    AuthInput(
-                      controller: emailController,
-                      label: 'Email',
-                      icon: Icons.email,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
-                    ),
-                    const SizedBox(height: 16),
+              AuthInput(
+                controller: emailController,
+                label: 'Email',
+                icon: Icons.email,
+                validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
+              ),
+              const SizedBox(height: 16),
 
-                    AuthInput(
-                      controller: passwordController,
-                      label: 'Contraseña',
-                      icon: Icons.lock,
-                      obscure: true,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
-                    ),
-                    const SizedBox(height: 16),
+              AuthInput(
+                controller: passwordController,
+                label: 'Contraseña',
+                icon: Icons.lock,
+                obscure: true,
+                validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
+              ),
+              const SizedBox(height: 16),
 
-                    AuthInput(
-                      controller: codigoController,
-                      label: 'Código Estudiante',
-                      icon: Icons.badge,
-                      validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
-                    ),
-                    const SizedBox(height: 20),
+              AuthInput(
+                controller: codigoController,
+                label: 'Código Estudiante',
+                icon: Icons.badge,
+                validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
+              ),
+              const SizedBox(height: 20),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: vm.creating
+                      ? null
+                      : () async {
                           if (!_formKey.currentState!.validate()) return;
 
+                          FocusScope.of(context).unfocus();
+
                           final success = await vm.createEstudiante(
-                            name: nameController.text,
-                            email: emailController.text,
-                            password: passwordController.text,
-                            codigo: codigoController.text,
+                            name: nameController.text.trim(),
+                            email: emailController.text.trim(),
+                            password: passwordController.text.trim(),
+                            codigo: codigoController.text.trim(),
                           );
 
-                          if (success && mounted) {
+                          if (!mounted) return;
+
+                          if (success) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content: Text(
-                                      'Estudiante creado correctamente')),
+                                content: Text('Estudiante creado correctamente'),
+                              ),
                             );
-                            context.go('/estudiantes'); 
-                            /* context.pop(true); */
+
+                            context.go('/estudiantes');
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Error al crear')),
                             );
                           }
                         },
-                        child: const Text('Crear Estudiante'),
-                      ),
-                    ),
-                  ],
+                  child: vm.creating
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Crear Estudiante'),
                 ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ),
+),
     );
   }
 }

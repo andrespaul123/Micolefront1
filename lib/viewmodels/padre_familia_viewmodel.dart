@@ -7,6 +7,7 @@ class PadreFamiliaViewModel extends ChangeNotifier {
   PadreFamiliaViewModel({required this.repository});
 
   bool loading = false;
+  bool creating = false;
   List<PadreFamilia> padres = [];
 
   Future<void> loadPadres() async {
@@ -24,16 +25,23 @@ class PadreFamiliaViewModel extends ChangeNotifier {
     String? telefono,
     String? ocupacion,
   }) async {
-    loading = true;
+    if(creating) return false;
+
+    creating = true;
     notifyListeners();
-    final success = await repository.createPadre(
-      name: name, email: email, password: password,
-      telefono: telefono, ocupacion: ocupacion,
-    );
-    loading = false;
-    if (success) await loadPadres();
-    notifyListeners();
-    return success;
+    try {
+      final success = await repository.createPadre(
+        name: name, email: email, password: password,
+        telefono: telefono, ocupacion: ocupacion,
+      );
+      if (success) {
+        await loadPadres();
+      }
+      return success;
+    } finally {
+      creating = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> deletePadre(int id) async {

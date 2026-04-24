@@ -15,6 +15,7 @@ import 'repository/academic_period_repository.dart';
 import 'repository/profesor_repository.dart';
 import 'repository/estudiante_repository.dart';
 import 'repository/padre_familia_repository.dart';
+import 'repository/circular_repository.dart';
 
 // ViewModels
 import 'viewmodels/auth_viewmodel.dart';
@@ -27,15 +28,17 @@ import 'viewmodels/academic_period_viewmodel.dart';
 import 'viewmodels/profesor_viewmodel.dart';
 import 'viewmodels/estudiante_viewmodel.dart';
 import 'viewmodels/padre_familia_viewmodel.dart'; 
+import 'viewmodels/circular_viewmodel.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+
 
 void main() async {
+   setUrlStrategy(PathUrlStrategy());
   WidgetsFlutterBinding.ensureInitialized();
 
   final dio = DioClient.create();
   final authViewModel = AuthViewModel(repository: AuthRepository(dio));
   await authViewModel.loadSession();
-
-  // 🔥 Crear el router UNA sola vez, fuera del build tree
   final router = createRouter(authViewModel);
 
   runApp(
@@ -43,67 +46,79 @@ void main() async {
       providers: [
         // Auth
         ChangeNotifierProvider.value(value: authViewModel),
-
-        // Tenant
-        ChangeNotifierProxyProvider<AuthViewModel, TenantViewModel>(
-          create: (_) => TenantViewModel(repository: TenantRepository(dio)),
-          update: (_, __, prev) => prev ?? TenantViewModel(repository: TenantRepository(dio)),
+//  Tenant
+        ChangeNotifierProvider(
+          create: (_) => TenantViewModel(
+            repository: TenantRepository(dio),
+          ),
         ),
 
         // Subject
-        ChangeNotifierProxyProvider<AuthViewModel, SubjectViewModel>(
-          create: (_) => SubjectViewModel(repository: SubjectRepository(dio)),
-          update: (_, __, prev) => prev ?? SubjectViewModel(repository: SubjectRepository(dio)),
+        ChangeNotifierProvider(
+          create: (_) => SubjectViewModel(
+            repository: SubjectRepository(dio),
+          ),
         ),
 
         // Curso
-        ChangeNotifierProxyProvider<AuthViewModel, CursoViewModel>(
+        ChangeNotifierProvider(
           create: (_) => CursoViewModel(
-            repository: CursoRepository(dio),
-            periodoRepository: AcademicPeriodRepository(dio),
-          ),
-          update: (_, __, prev) => prev ?? CursoViewModel(
             repository: CursoRepository(dio),
             periodoRepository: AcademicPeriodRepository(dio),
           ),
         ),
 
         // Paralelo
-        ChangeNotifierProxyProvider<AuthViewModel, ParaleloViewModel>(
-          create: (_) => ParaleloViewModel(repository: ParaleloRepository(dio)),
-          update: (_, __, prev) => prev ?? ParaleloViewModel(repository: ParaleloRepository(dio)),
+        ChangeNotifierProvider(
+          create: (_) => ParaleloViewModel(
+            repository: ParaleloRepository(dio),
+          ),
         ),
 
         // Profesor
-        ChangeNotifierProxyProvider<AuthViewModel, ProfesorViewModel>(
-          create: (_) => ProfesorViewModel(repository: ProfesorRepository(dio)),
-          update: (_, __, prev) => prev ?? ProfesorViewModel(repository: ProfesorRepository(dio)),
+        ChangeNotifierProvider(
+          create: (_) => ProfesorViewModel(
+            repository: ProfesorRepository(dio),
+          ),
         ),
 
-        //ESTUDIANTE
-        ChangeNotifierProxyProvider<AuthViewModel, EstudianteViewModel>(
-          create: (_) => EstudianteViewModel(repository: EstudianteRepository(dio)),
-          update: (_, __, prev) => prev ?? EstudianteViewModel(repository: EstudianteRepository(dio)),
+        //  Estudiante
+        ChangeNotifierProvider(
+          create: (_) => EstudianteViewModel(
+            repository: EstudianteRepository(dio),
+          ),
         ),
 
-        //PADRE DE FAMILIA
-        ChangeNotifierProxyProvider<AuthViewModel, PadreFamiliaViewModel>(
-          create: (_) => PadreFamiliaViewModel(repository: PadreFamiliaRepository(dio)),
-          update: (_, __, prev) => prev ?? PadreFamiliaViewModel(repository: PadreFamiliaRepository(dio)),
-
+        //  Padre de familia
+        ChangeNotifierProvider(
+          create: (_) => PadreFamiliaViewModel(
+            repository: PadreFamiliaRepository(dio),
+          ),
         ),
+
         // Periodo académico
-        ChangeNotifierProxyProvider<AuthViewModel, AcademicPeriodViewModel>(
-          create: (_) => AcademicPeriodViewModel(repository: AcademicPeriodRepository(dio)),
-          update: (_, __, prev) => prev ?? AcademicPeriodViewModel(repository: AcademicPeriodRepository(dio)),
+        ChangeNotifierProvider(
+          create: (_) => AcademicPeriodViewModel(
+            repository: AcademicPeriodRepository(dio),
+          ),
         ),
 
         // Asignación
         ChangeNotifierProvider(
-          create: (_) => AsignacionViewModel(repository: AsignacionRepository(dio)),
+          create: (_) => AsignacionViewModel(
+            repository: AsignacionRepository(dio),
+            periodoRepository: AcademicPeriodRepository(dio),
+          ),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => CircularViewModel(
+            repository: CircularRepository(dio),  
+          ),
         ),
       ],
       child: MyApp(router: router),
+
     ),
   );
 }

@@ -7,6 +7,8 @@ class ProfesorViewModel extends ChangeNotifier {
   final ProfesorRepository repository;
 
   bool loading = false;
+  bool creating = false;
+  bool assigning = false;
   List<Profesor> profesores = [];
 
   ProfesorViewModel({required this.repository});
@@ -35,52 +37,59 @@ class ProfesorViewModel extends ChangeNotifier {
 
 
   // CREAR
-  Future<bool> createProfesor({
+ Future<bool> createProfesor({
     required String name,
     required String email,
     required String password,
     required String codigo,
     String? especialidad,
   }) async {
-    loading = true;
+    if (creating) return false;
+
+    creating = true;
     notifyListeners();
 
-    final success = await repository.createProfesor(
-      name: name,
-      email: email,
-      password: password,
-      codigo: codigo,
-      especialidad: especialidad,
-    );
+    try {
+      final success = await repository.createProfesor(
+        name: name,
+        email: email,
+        password: password,
+        codigo: codigo,
+        especialidad: especialidad,
+      );
 
-    loading = false;
+      if (success) {
+        await loadProfesores();
+      }
 
-    if (success) {
-      await loadProfesores(); // 🔥 recargar
-      return true;
+      return success;
+    } finally {
+      creating = false;
+      notifyListeners();
     }
-
-    notifyListeners();
-    return false;
   }
-  Future<bool> asignarMateria({
-  required int profesorId,
-  required int subjectId,
-}) async {
-  loading = true;
-  notifyListeners();
+   Future<bool> asignarMateria({
+    required int profesorId,
+    required int subjectId,
+  }) async {
+    if (assigning) return false;
 
-  final success = await repository.asignarMateria(
-    profesorId: profesorId,
-    subjectId: subjectId,
-  );
+    assigning = true;
+    notifyListeners();
 
-  loading = false;
-  notifyListeners();
+    try {
+      final success = await repository.asignarMateria(
+        profesorId: profesorId,
+        subjectId: subjectId,
+      );
 
-  return success;
-}
-
+      // ❌ NO recargamos toda la lista (como padres)
+      return success;
+    } finally {
+      assigning = false;
+      notifyListeners();
+    }
+  }
 Future<bool> deleteProfesor(int id) async {
     loading = true;
     notifyListeners();
