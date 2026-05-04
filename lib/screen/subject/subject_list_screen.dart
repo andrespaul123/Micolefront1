@@ -29,6 +29,7 @@ class _SubjectListScreenState extends State<SubjectListScreen> {
 
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
+<<<<<<< Updated upstream
         onPressed: () async {
           await Navigator.push(
             context,
@@ -40,6 +41,9 @@ class _SubjectListScreenState extends State<SubjectListScreen> {
           // 🔄 Recargar lista
           vm.loadSubjects();
         },
+=======
+        onPressed: () async {context.go('/materias/create');},
+>>>>>>> Stashed changes
       ),
 
       body: vm.loading

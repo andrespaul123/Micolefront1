@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/paralelo_viewmodel.dart';
+<<<<<<< Updated upstream
 import 'paralelo_create_screen.dart';
+=======
+import '../../viewmodels/academic_period_viewmodel.dart';
+>>>>>>> Stashed changes
 
 class ParaleloListScreen extends StatefulWidget {
   const ParaleloListScreen({super.key});
@@ -11,18 +15,44 @@ class ParaleloListScreen extends StatefulWidget {
 }
 
 class _ParaleloListScreenState extends State<ParaleloListScreen> {
+
   @override
   void initState() {
     super.initState();
+<<<<<<< Updated upstream
     Future.microtask(() =>
         Provider.of<ParaleloViewModel>(context, listen: false).loadParalelos());
+=======
+
+    Future.microtask(() async {
+      final periodoVM = context.read<AcademicPeriodViewModel>();
+
+      // 🔥 Esperar periodo (CLAVE en web)
+      if (periodoVM.periodoActivo == null) {
+        await periodoVM.loadPeriodoActivo();
+      }
+
+      final periodoId = periodoVM.periodoActivo?.id;
+
+      if (periodoId != null) {
+        await context.read<ParaleloViewModel>().loadParalelosByCurso(
+          periodoId,
+          widget.cursoId,
+        );
+      }
+    });
+>>>>>>> Stashed changes
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = Provider.of<ParaleloViewModel>(context);
+    final vm = context.watch<ParaleloViewModel>();
 
     return Scaffold(
+<<<<<<< Updated upstream
+=======
+      appBar: AppBar(title: const Text('Paralelos')),
+>>>>>>> Stashed changes
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.push(
@@ -33,7 +63,8 @@ class _ParaleloListScreenState extends State<ParaleloListScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      body: vm.loading
+
+      body: vm.loading && vm.paralelos.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : vm.paralelos.isEmpty
               ? const Center(child: Text("No hay paralelos"))
@@ -41,6 +72,7 @@ class _ParaleloListScreenState extends State<ParaleloListScreen> {
                   itemCount: vm.paralelos.length,
                   itemBuilder: (_, i) {
                     final p = vm.paralelos[i];
+<<<<<<< Updated upstream
                     return Card(
                       margin: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
@@ -121,6 +153,50 @@ class _ParaleloListScreenState extends State<ParaleloListScreen> {
                             }
                           },
                         ),
+=======
+
+                    return ListTile(
+                      title: Text('Paralelo ${p.nombre}'),
+                      subtitle: Text(p.turno ?? ''),
+
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 🔥 VER HORARIO
+                          IconButton(
+                            icon: const Icon(
+                              Icons.calendar_view_week_rounded,
+                              color: Colors.deepPurple,
+                            ),
+                            onPressed: () {
+                              context.go(
+                                '/cursos/${widget.cursoId}/paralelos/${p.id}/horario',
+                              );
+                            },
+                          ),
+
+                          // 🔥 ELIMINAR
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              await vm.deleteParalelo(p.id!);
+
+                              final periodoVM =
+                                  context.read<AcademicPeriodViewModel>();
+
+                              final periodoId =
+                                  periodoVM.periodoActivo?.id;
+
+                              if (periodoId != null) {
+                                await vm.loadParalelosByCurso(
+                                  periodoId,
+                                  widget.cursoId,
+                                );
+                              }
+                            },
+                          ),
+                        ],
+>>>>>>> Stashed changes
                       ),
                     );
                   },

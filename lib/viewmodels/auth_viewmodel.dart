@@ -29,6 +29,7 @@ class AuthViewModel extends ChangeNotifier {
 
     final response = await repository.login(email, password);
 
+<<<<<<< Updated upstream
     if (response != null) {
       user = response;
       token = response.token;
@@ -43,6 +44,54 @@ class AuthViewModel extends ChangeNotifier {
       print("✅ LOGIN OK");
     } else {
       print("❌ LOGIN FALLIDO");
+=======
+      user = response;
+      token = response.token;
+
+      await SecureStorage.saveSession(
+        token: response.token,
+        role: response.roles.first,
+        name: response.name,
+        email: response.email,
+      );
+
+      if (kDebugMode) debugPrint('✅ LOGIN OK');
+
+      return true;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+
+       if (data != null &&
+          data['errors'] != null &&
+          data['errors']['email'] != null) {
+        loginError = data['errors']['email'][0].toString();
+      } else if (data != null &&
+          data['errors'] != null &&
+          data['errors']['password'] != null) {
+        loginError = data['errors']['password'][0].toString();
+      } else {
+        loginError = data?['message']?.toString() ?? 'Error de conexión';
+      }
+       if (loginError == 'The email must be a valid email address.') {
+       loginError = 'Correo inválido';
+  }
+  if (loginError == 'Credenciales incorrectas') {
+  loginError = 'Correo o contraseña incorrectos';
+}
+
+      if (kDebugMode) debugPrint('❌ LOGIN ERROR: $loginError');
+
+      return false;
+    } catch (e) {
+      loginError = 'Error inesperado';
+
+      if (kDebugMode) debugPrint('❌ LOGIN ERROR: $e');
+
+      return false;
+    } finally {
+      loading = false;
+      notifyListeners();
+>>>>>>> Stashed changes
     }
 
     loading = false;
@@ -64,6 +113,7 @@ class AuthViewModel extends ChangeNotifier {
       password: password,
     );
 
+<<<<<<< Updated upstream
     if (response != null) {
       user = response;
       token = response.token;
@@ -78,6 +128,54 @@ class AuthViewModel extends ChangeNotifier {
       print("✅ REGISTER OK");
     } else {
       print("❌ REGISTER FALLIDO");
+=======
+      user = response;
+      token = response.token;
+
+      await SecureStorage.saveSession(
+        token: response.token,
+        role: response.roles.first,
+        name: response.name,
+        email: response.email,
+      );
+
+      if (kDebugMode) debugPrint('✅ REGISTER OK');
+
+      return true;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+
+      loginError =
+          data?['errors']?['name']?.first ??
+          data?['errors']?['email']?.first ??
+          data?['errors']?['password']?.first ??
+          data?['message'] ??
+          'Error de conexión';
+  
+    if (loginError == 'The email has already been tak en.') {
+  loginError = 'El correo ya está registrado';
+}
+if (loginError == 'The email must be a valid email address.') {
+  loginError = 'Correo inválido';
+}
+if (loginError == 'The password must be at least 6 characters.') {
+  loginError = 'La contraseña debe tener al menos 6 caracteres';
+}
+
+
+      if (kDebugMode) debugPrint('❌ REGISTER ERROR: $loginError');
+
+      return false;
+    } catch (e) {
+      loginError = 'Error inesperado';
+
+      if (kDebugMode) debugPrint('❌ REGISTER ERROR: $e');
+
+      return false;
+    } finally {
+      loading = false;
+      notifyListeners();
+>>>>>>> Stashed changes
     }
 
     loading = false;
@@ -99,6 +197,12 @@ class AuthViewModel extends ChangeNotifier {
     if (savedToken != null) {
       token = savedToken;
 
+<<<<<<< Updated upstream
+=======
+    if (session['token'] != null) {
+      token = session['token'];
+
+>>>>>>> Stashed changes
       user = Users(
         id: null,
         name: savedName ?? '',
@@ -107,9 +211,13 @@ class AuthViewModel extends ChangeNotifier {
         roles: savedRole != null ? [savedRole] : [],
       );
 
+<<<<<<< Updated upstream
       print("🔁 SESIÓN RESTAURADA");
       print("Token: $savedToken");
       print("Role: $savedRole");
+=======
+      if (kDebugMode) debugPrint('🔁 SESIÓN RESTAURADA');
+>>>>>>> Stashed changes
 
       notifyListeners();
     }
@@ -131,7 +239,11 @@ class AuthViewModel extends ChangeNotifier {
     user = null;
     token = null;
 
+<<<<<<< Updated upstream
     print("🔓 SESIÓN CERRADA");
+=======
+    if (kDebugMode) debugPrint('🔓 SESIÓN CERRADA');
+>>>>>>> Stashed changes
 
     notifyListeners();
   }

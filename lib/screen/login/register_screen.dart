@@ -59,6 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
 
                 const SizedBox(height: 16),
+<<<<<<< Updated upstream
 
                 AuthInput(
                   controller: emailController,
@@ -79,7 +80,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       v!.isEmpty ? 'Campo requerido' : null,
                 ),
 
+=======
+                AuthInput(
+  controller: emailController,
+  label: 'Email',
+  icon: Icons.email,
+  validator: (v) {
+    if (v == null || v.isEmpty) {
+      return 'Campo requerido';
+    }
+
+    if (!v.contains('@') || !v.contains('.')) {
+      return 'Correo inválido';
+    }
+
+    return null;
+  },
+),
+                const SizedBox(height: 16),
+                AuthInput(controller: passwordController, label: 'Contraseña', icon: Icons.lock,
+                  obscure: true, validator: (v) {
+  if (v == null || v.isEmpty) return 'Campo requerido';
+  if (v.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+  return null;
+},),
+>>>>>>> Stashed changes
                 const SizedBox(height: 20),
+                if (auth.loginError != null) ...[
+               const SizedBox(height: 10),
+                Text( auth.loginError!, style: const TextStyle(   color: Colors.red,   fontSize: 14, fontWeight: FontWeight.w600,),
+               textAlign: TextAlign.center,
+               ),
+            ],
+          const SizedBox(height: 10),
 
                 SizedBox(
                   width: double.infinity,

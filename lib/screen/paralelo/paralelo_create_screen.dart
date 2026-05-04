@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/paralelo_viewmodel.dart';
+<<<<<<< Updated upstream
 import '../../viewmodels/curso_viewmodel.dart';
 import '../../models/curso.dart';
+=======
+>>>>>>> Stashed changes
 import '../../core/widgest/auth_card.dart';
 import '../../core/widgest/auth_input.dart';
 

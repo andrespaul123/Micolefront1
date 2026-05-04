@@ -41,9 +41,72 @@ class AsignacionViewModel extends ChangeNotifier {
     horaFin: horaFin,
   );
 
+<<<<<<< Updated upstream
   loading = false;
   notifyListeners();
 
   return error;
+=======
+  loadingCurso = false;
+  notifyListeners();
+}
+} */
+/* Future<void> loadHorarioCurso({
+  required int cursoId,
+  required int paraleloId,
+}) async {
+  loadingCurso = true;
+  notifyListeners();
+
+  // 🔥 ASEGURAR PERIODO
+  if (periodoActivo == null) {
+    await loadPeriodo();
+  }
+
+  if (periodoActivo == null) {
+    horarioCurso = {};
+    loadingCurso = false;
+    notifyListeners();
+    return;
+  }
+
+  horarioCurso = await repository.getHorarioCurso(
+    periodoId:  periodoActivo!.id!,
+    cursoId:    cursoId,
+    paraleloId: paraleloId,
+  );
+
+  loadingCurso = false;
+  notifyListeners();
+} */
+Future<void> loadHorarioCurso({
+  required int cursoId,
+  required int paraleloId,
+}) async {
+  loadingCurso = true;
+  notifyListeners();
+
+  // 🔥 asegurar periodo
+  if (periodoActivo == null) {
+    await loadPeriodo();
+  }
+
+  // 🔥 si no hay periodo → limpiar y salir
+  if (periodoActivo == null) {
+    horarioCurso = {};
+    loadingCurso = false;
+    notifyListeners();
+    return;
+  }
+
+  horarioCurso = await repository.getHorarioCurso(
+    periodoId: periodoActivo!.id!,
+    cursoId: cursoId,
+    paraleloId: paraleloId,
+  );
+
+  loadingCurso = false;
+  notifyListeners();
+>>>>>>> Stashed changes
 }
 }

@@ -7,41 +7,24 @@ class SubjectRepository {
   SubjectRepository(this._dio);
 
   // 🔥 CREAR
-  Future<Subject?> createSubject(String name) async {
-    try {
-      final response = await _dio.post(
-        '/subjects',
+  Future<Subject> createSubject(String name) async {
+      final response = await _dio.post( '/subjects',
         data: {
-          'name': name,
-        },
+          'name': name,},
       );
 
       print("CREATE SUBJECT: ${response.data}");
 
       return Subject.fromJson(response.data);
-    } catch (e) {
-      if (e is DioException) {
-        print("ERROR CREATE SUBJECT: ${e.response?.data}");
-      }
-      return null;
     }
-  }
+  
 
   // 🔥 LISTAR
   Future<List<Subject>> getSubjects() async {
-    try {
       final response = await _dio.get('/subjects');
-
-      print("GET SUBJECTS: ${response.data}");
-
-      return (response.data as List)
-          .map((e) => Subject.fromJson(e))
-          .toList();
-    } catch (e) {
-      if (e is DioException) {
-        print("ERROR GET SUBJECTS: ${e.response?.data}");
-      }
-      return [];
-    }
+        
+    return (response.data as List)
+        .map((e) => Subject.fromJson(e))
+        .toList();
   }
 }

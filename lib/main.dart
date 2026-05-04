@@ -95,6 +95,7 @@ ChangeNotifierProvider(
 ),
 // Dentro de MultiProvider, añade esto:
 
+<<<<<<< Updated upstream
         ChangeNotifierProxyProvider<AuthViewModel, ProfesorViewModel>(
   create: (_) => ProfesorViewModel(
     repository: ProfesorRepository(dio),
@@ -105,6 +106,56 @@ ChangeNotifierProvider(
     );
   },
 ),
+=======
+        // Paralelo
+        ChangeNotifierProvider(
+          create: (_) => ParaleloViewModel(
+            repository: ParaleloRepository(dio),
+          ),
+        ),
+
+        // Profesor
+        ChangeNotifierProvider(
+          create: (_) => ProfesorViewModel(
+            repository: ProfesorRepository(dio),
+          ),
+        ),
+
+        //  Estudiante
+        ChangeNotifierProvider(
+          create: (_) => EstudianteViewModel(
+            repository: EstudianteRepository(dio),
+          ),
+        ),
+
+        //  Padre de familia
+        ChangeNotifierProvider(
+          create: (_) => PadreFamiliaViewModel(
+            repository: PadreFamiliaRepository(dio),
+          ),
+        ),
+
+        // Periodo académico
+        ChangeNotifierProvider(
+          create: (_) => AcademicPeriodViewModel(
+            repository: AcademicPeriodRepository(dio),
+          )..loadPeriodoActivo(),
+        ),
+
+        // Asignación
+        ChangeNotifierProvider(
+          create: (_) => AsignacionViewModel(
+            repository: AsignacionRepository(dio),
+            periodoRepository: AcademicPeriodRepository(dio),
+          ),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => CircularViewModel(
+            repository: CircularRepository(dio),  
+          ),
+        ),
+>>>>>>> Stashed changes
       ],
       child: const MyApp(),
     ),

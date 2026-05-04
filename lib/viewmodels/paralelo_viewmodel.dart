@@ -60,4 +60,52 @@ class ParaleloViewModel extends ChangeNotifier {
     notifyListeners();
     return success;
   }
+<<<<<<< Updated upstream
+=======
+
+ /*   Future<void> loadParalelosByCurso(int periodoId, int cursoId) async {
+    
+  loading = true;
+  notifyListeners();
+
+  paralelos = await repository.getParalelosByCurso(periodoId, cursoId);
+
+  loading = false;
+  notifyListeners();
+}  */
+/* Future<void> loadParalelosByCurso(int periodoId, int cursoId) async {
+    _periodoId  = periodoId;
+    _cursoId    = cursoId;
+    loading     = true;
+    initialized = false;
+    notifyListeners();
+
+    paralelos   = await repository.getParalelosByCurso(periodoId, cursoId);
+    loading     = false;
+    initialized = true;
+    notifyListeners();
+  }
+
+  Future<void> reload() async {
+    if (_periodoId == null || _cursoId == null) return;
+    await loadParalelosByCurso(_periodoId!, _cursoId!);
+  } */Future<void> loadParalelosByCurso(int periodoId, int cursoId) async {
+  _periodoId = periodoId;   // 👈 GUARDAR
+  _cursoId = cursoId;       // 👈 GUARDAR
+
+  loading = true;
+  notifyListeners();
+
+  paralelos = await repository.getParalelosByCurso(periodoId, cursoId);
+
+  loading = false;
+  notifyListeners();
+}
+Future<void> reload() async {
+  if (_periodoId == null || _cursoId == null) return;
+
+  await loadParalelosByCurso(_periodoId!, _cursoId!);
+}
+
+>>>>>>> Stashed changes
 }
